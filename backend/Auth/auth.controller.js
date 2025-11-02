@@ -1,16 +1,18 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
-import db from "../db.js";
-import jwt from "jsonwebtoken";
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const bcrypt = require("bcryptjs");
+const db = require("../db.js");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 dotenv.config();
 
-app.post("/api/auth/register", async (req, res) => {
+
+const register = async (req, res) => {
+
 const {
     fname,
     lname,
@@ -46,7 +48,7 @@ const {
     }
 
     if (password != confirmpass) {
-        return res.status(400).json({ message: "Confirm Doesnt Match" });
+        return res.status(400).json({ message: "Passwords Doesnt Match" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -62,11 +64,12 @@ const {
     console.error("Error registering user:", error.message);
     return res.status(500).json({ message: "Server error" });
     }
-});
+};
 
-app.post("/api/auth/login", async (req, res) => {
+const LoginUser = async (req, res) => {
     const { email, phone_number, password } = req.body;
-
+    const SECRET = process.env.JWT_SECRET;
+    
     if (!password) {
     return res.status(400).json({ message: "Password not provided" });
 }
@@ -90,12 +93,22 @@ try {
     if (!isMatch) {
         return res.status(400).json({ message: "Incorrect password" });
     }
-    return res.status(200).json({ message: "User Logged in successfully" });
+
+    const userId = user.id;    
+    //jwt
+    const accessToken = jwt.sign({ userId: userId}, SECRET, { subject: 'accessApi', expiresIn: '12m'})
+
+
+    return res.status(200).json({ 
+        id: userId,
+        email: email,
+        accessToken,
+        message: "User Logged in successfully" });  
 
     } catch (error) {
         console.error("Error Logging user:", error.message);
         return res.status(500).json({ message: "Server error" });
     }
-});
+}
 
-export default app;
+module.exports = { register, LoginUser };

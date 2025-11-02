@@ -1,21 +1,23 @@
-import dotenv from "dotenv";
-const mysql = require("mysql2");
+require("dotenv").config()
+const mysql = require("mysql2/promise");
 
-dotenv.config()
 
-const connection = mysql.createConnection({
+
+const db = mysql.createPool({
   host: 'localhost',   
   user: 'root',         
-  password: process.dotenv.DBPass,
-  database: 'test'     
+  password: process.env.DBPass,
+  database: 'productivity_app'     
 });
 
-connection.connect((err) => {
-  if (err) {
-    console.error('Error connecting:', err);
-    return;
+(async () => {
+  try {
+    const connection = await db.getConnection();
+    console.log("Connected to MySQL successfully!");
+    connection.release();
+  } catch (err) {
+    console.error("Error connecting to MySQL:", err.message);
   }
-  console.log('Connected to MySQL successfully!');
-});
+})();
 
-module.exports = connection;
+module.exports = db;
