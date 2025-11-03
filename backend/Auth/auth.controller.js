@@ -123,6 +123,9 @@ const currentUser = async (req, res) => {
         id: user[0].id,
         name: user[0].fullname,
         email: user[0].email,
+        phone_number: user[0].phone_number,
+        type: user[0].type,
+        company: user[0].company
     });
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -130,11 +133,12 @@ const currentUser = async (req, res) => {
 };
 
 async function ensureAuthenticated(req, res, next) {
-    const accessToken = req.headers.authorization;
+    const accessToken = req.headers.authorization.split(' ')[1];
 
     if (!accessToken) {
         return res.status(401).json({ message: "Access token not found!" });
-    }
+    }   
+
 
     try {
         const decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);

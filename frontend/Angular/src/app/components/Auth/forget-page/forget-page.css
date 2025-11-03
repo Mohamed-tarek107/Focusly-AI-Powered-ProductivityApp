@@ -116,6 +116,10 @@ body {
 }
 .forgot-link:hover { color:#9fa5d5; transform: translateX(4px); }
 
+.logo-icon {
+  color: #5b5cff;
+  font-size: 20px;
+}
 /* button */
 .btn-block {
   width:100%;
