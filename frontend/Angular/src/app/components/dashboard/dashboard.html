@@ -1,0 +1,138 @@
+<div class="app-container">
+    <app-navbar></app-navbar>
+    
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <h1 class="page-title">Focusly</h1>
+        </div>
+        <div class="header-right">
+          <button class="header-btn">🔔</button>
+          <button class="header-btn">👤</button>
+          <div class="user-menu">
+            <span>{{ currentUser }}</span>
+            <span class="dropdown">▼</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+        </div>
+        <span class="progress-text">{{ progressPercentage }}% complete</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active">Upcoming</button>
+        <button class="tab">Board</button>
+        <button class="tab">Notes</button>
+      </div>
+
+      <!-- Upcoming Work -->
+      <div class="upcoming-section">
+        <h2>Upcoming Work</h2>
+        <div class="tasks-grid">
+          <div class="task-card" *ngFor="let task of upcomingTasks">
+            <div class="task-header">
+              <span class="task-time">⏱ {{ task.timeLeft }}</span>
+              <button class="menu-btn">...</button>
+            </div>
+            <h3>{{ task.title }}</h3>
+            <p class="task-desc">{{ task.description }}</p>
+            <div class="task-priority">
+              <span [class]="'priority priority-' + task.priority.toLowerCase()">
+                {{ task.priority }}
+              </span>
+              <span class="priority priority-medium" *ngIf="task.secondaryTag">
+                {{ task.secondaryTag }}
+              </span>
+            </div>
+            <div class="task-footer">
+              <span class="task-date">📅 {{ task.date }}</span>
+              <span class="task-time-detail">🕐 {{ task.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Section -->
+      <div class="performance-section">
+        <div class="performance-header">
+          <h2>Performance</h2>
+          <span class="period">Last Week</span>
+        </div>
+
+        <div class="performance-grid">
+          <!-- Chart 1 -->
+          <div class="chart-card">
+            <div class="chart-title">Productivity</div>
+            <div class="chart-bars">
+              <div class="bar" [style.height.%]="60"></div>
+              <div class="bar" [style.height.%]="75"></div>
+              <div class="bar" [style.height.%]="85"></div>
+              <div class="bar" [style.height.%]="65"></div>
+              <div class="bar" [style.height.%]="70"></div>
+              <div class="bar" [style.height.%]="80"></div>
+              <div class="bar" [style.height.%]="55"></div>
+            </div>
+            <div class="chart-label">97% Productivity</div>
+          </div>
+
+          <!-- Chart 2 -->
+          <div class="goal-card">
+            <div class="goal-content">
+              <div class="goal-percentage">25%</div>
+              <div class="goal-label">Goal Achieved</div>
+            </div>
+            <div class="circular-progress"></div>
+          </div>
+        </div>
+
+        <div class="long-term-goals">
+          <span>Long term Goals</span>
+          <select>
+            <option>Select Goal</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="right-sidebar">
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <span class="month">Monthly</span>
+          <span class="period-toggle">Daily</span>
+        </div>
+        <div class="calendar">
+          <h3>{{ currentMonth }}</h3>
+          <div class="calendar-grid">
+            <div class="calendar-day-header" *ngFor="let day of dayHeaders">{{ day }}</div>
+            <div class="calendar-day" *ngFor="let date of calendarDates" 
+                 [class.today]="date === 23"
+                 [class.other-month]="date === 0">
+              {{ date === 0 ? '' : date }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="task-list-section">
+        <div class="task-list-header">
+          <h3>Task</h3>
+          <button class="edit-btn">✏</button>
+        </div>
+        <div class="task-list">
+          <label class="checkbox-item" *ngFor="let item of taskList">
+            <input type="checkbox" [checked]="item.completed">
+            <span [class.completed]="item.completed">{{ item.name }}</span>
+          </label>
+        </div>
+        <button class="schedule-btn">Schedule Task</button>
+      </div>
+    </div>
+  </div>

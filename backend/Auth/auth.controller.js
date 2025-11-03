@@ -10,10 +10,8 @@ app.use(cors());
 app.use(express.json());
 dotenv.config();
 
-
 const register = async (req, res) => {
-
-const {
+  const {
     fname,
     lname,
     email,
@@ -21,24 +19,24 @@ const {
     confirmpass,
     phone_number,
     company,
-    type
-} = req.body;
+    type,
+  } = req.body;
 
-    if(
-        !fname ||
-        !lname ||
-        !email ||
-        !password ||
-        !phone_number ||
-        !company ||
-        !type ||
-        !confirmpass)
-    {
-        console.error("Information not Provided");
-        return res.status(400).json({ message: "Information not provided" });
-    }
+  if (
+    !fname ||
+    !lname ||
+    !email ||
+    !password ||
+    !phone_number ||
+    !company ||
+    !type ||
+    !confirmpass
+) {
+    console.error("Information not Provided");
+    return res.status(400).json({ message: "Information not provided" });
+}
 
-    try {
+  try {
     const [existingUser] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
         [email]
@@ -59,26 +57,28 @@ const {
         [fname, lname, email, hashedPassword, company, type, phone_number]
     );
 
-    return res.status(201).json({ message: "User registered successfully" });
+        return res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
-    console.error("Error registering user:", error.message);
-    return res.status(500).json({ message: "Server error" });
-    }
+        console.error("Error registering user:", error.message);
+        return res.status(500).json({ message: "Server error" });
+}
 };
 
 const LoginUser = async (req, res) => {
     const { email, phone_number, password } = req.body;
     const SECRET = process.env.JWT_SECRET;
-    
-    if (!password) {
-    return res.status(400).json({ message: "Password not provided" });
-}
 
-    if (!email && !phone_number) {
-    return res.status(400).json({ message: "Email / Phone number Not Provided" });
+    if (!password) {
+        return res.status(400).json({ message: "Password not provided" });
     }
 
-try {
+    if (!email && !phone_number) {
+    return res
+        .status(400)
+        .json({ message: "Email / Phone number Not Provided" });
+    }
+
+    try {
     const [existingUser] = await db.execute(
       "SELECT * FROM users WHERE email = ? OR phone_number = ?",
         [email || null, phone_number || null]
@@ -94,21 +94,57 @@ try {
         return res.status(400).json({ message: "Incorrect password" });
     }
 
-    const userId = user.id;    
+    const userId = user.id;
     //jwt
-    const accessToken = jwt.sign({ userId: userId}, SECRET, { subject: 'accessApi', expiresIn: '12m'})
+    const accessToken = jwt.sign({ id: userId }, SECRET, {
+        subject: "accessApi",
+        expiresIn: "1h",
+    });
 
-
-    return res.status(200).json({ 
+    return res.status(200).json({
         id: userId,
         email: email,
         accessToken,
-        message: "User Logged in successfully" });  
-
+        message: "User Logged in successfully",
+    });
     } catch (error) {
         console.error("Error Logging user:", error.message);
         return res.status(500).json({ message: "Server error" });
     }
+};
+
+const currentUser = async (req, res) => {
+    try {
+        const [user] = await db.execute("SELECT * FROM users WHERE id = ?", [
+        req.user.id,
+    ]);
+
+    return res.status(200).json({
+        id: user[0].id,
+        name: user[0].fullname,
+        email: user[0].email,
+    });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+async function ensureAuthenticated(req, res, next) {
+    const accessToken = req.headers.authorization;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: "Access token not found!" });
+    }
+
+    try {
+        const decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+        req.user = { id: decodedAccessToken.id };
+
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: "access token invalid or expired" });
+    }
 }
 
-module.exports = { register, LoginUser };
+module.exports = { register, LoginUser, ensureAuthenticated, currentUser };
