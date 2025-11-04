@@ -4,12 +4,13 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
-
+const cookie = require("cookie-parser")
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 dotenv.config();
-
+app.use(cookieParser());
 const register = async (req, res) => {
   const {
     fname,
@@ -100,6 +101,11 @@ const LoginUser = async (req, res) => {
         subject: "accessApi",
         expiresIn: "1h",
     });
+
+    const refreshToken = jwt.sign({ id: userId }, SECRET,{
+        subject: "RefreshToken",
+        expiresIn: "2w"
+    })
 
     return res.status(200).json({
         id: userId,
