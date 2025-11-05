@@ -9,98 +9,69 @@
       <div class="card register-card">
         <h2 class="form-title">Create an account</h2>
 
-        <!-- keep form static (no TS events) -->
-        <form action="#" class="register-form" autocomplete="off" novalidate>
+        <form class="register-form" autocomplete="off" novalidate (ngSubmit)="onRegister()">
+          <div *ngIf="message" class="alert success">{{ message }}</div>
+          <div *ngIf="errormessage" class="alert error">{{ errormessage }}</div>
+
           <div class="form-group floating">
-            <input id="floating_email" type="email" required class="form-control" placeholder=" " />
+            <input id="floating_email" name="email" type="email" required class="form-control" placeholder=" " [(ngModel)]="email" />
             <label for="floating_email" class="floating-label">Email address</label>
           </div>
 
           <div class="form-group floating">
-            <input
-              id="floating_password"
-              type="password"
-              required
-              class="form-control"
-              placeholder=" "
-            />
+            <input id="floating_password" name="password" type="password" required class="form-control" placeholder=" " [(ngModel)]="password" />
             <label for="floating_password" class="floating-label">Password</label>
           </div>
 
           <div class="form-group floating">
-            <input
-              id="floating_repeat_password"
-              type="password"
-              required
-              class="form-control"
-              placeholder=" "
-            />
+            <input id="floating_repeat_password" name="confirmpass" type="password" required class="form-control" placeholder=" " [(ngModel)]="confirmpass" />
             <label for="floating_repeat_password" class="floating-label">Confirm password</label>
           </div>
 
           <div class="row-grid">
             <div class="form-group floating">
-              <input
-                id="floating_first_name"
-                type="text"
-                required
-                class="form-control"
-                placeholder=" "
-              />
+              <input id="floating_first_name" name="fname" type="text" required class="form-control" placeholder=" " [(ngModel)]="fname" />
               <label for="floating_first_name" class="floating-label">First name</label>
             </div>
 
             <div class="form-group floating">
-              <input
-                id="floating_last_name"
-                type="text"
-                required
-                class="form-control"
-                placeholder=" "
-              />
+              <input id="floating_last_name" name="lname" type="text" required class="form-control" placeholder=" " [(ngModel)]="lname" />
               <label for="floating_last_name" class="floating-label">Last name</label>
             </div>
           </div>
 
           <div class="row-grid">
             <div class="form-group floating">
-            <input
-                id="floating_phone"
-                type="tel"
-                pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                class="form-control"
-                placeholder=" "
-                />
-                <label for="floating_phone" class="floating-label">Phone (201-)</label>
+              <input id="floating_phone" name="phone_number" type="tel" class="form-control" placeholder=" " [(ngModel)]="phone_number" />
+              <label for="floating_phone" class="floating-label">Phone</label>
             </div>
 
             <div class="form-group floating">
-                <input id="floating_company" type="text" class="form-control" placeholder=" " />
-                <label for="floating_company" class="floating-label">Company/University/School</label>
+              <input id="floating_company" name="company" type="text" class="form-control" placeholder=" " [(ngModel)]="company" />
+              <label for="floating_company" class="floating-label">Company/University/School</label>
             </div>
-        </div>
+          </div>
 
-
-            <div class="form-group radios" role="radiogroup" aria-label="Role">
+          <div class="form-group radios" role="radiogroup" aria-label="Role">
             <label class="radio-label">
-                <input type="radio" name="role" value="student" checked /> Student
+              <input type="radio" name="role" value="student" [(ngModel)]="type" /> Student
             </label>
             <label class="radio-label">
-                <input type="radio" name="role" value="employee" /> Employee
+              <input type="radio" name="role" value="employee" [(ngModel)]="type" /> Employee
             </label>
             <label class="radio-label">
-                <input type="radio" name="role" value="other" /> Other
+              <input type="radio" name="role" value="other" [(ngModel)]="type" /> Other
             </label>
-            </div>
+          </div>
 
-            <button type="button" class="btn btn-primary btn-block">Create account</button>
+          <button type="submit" class="btn btn-primary btn-block">Create account</button>
         </form>
 
         <div class="text-center mt-3">
-            <p>Already registered? <a [routerLink]="['/Login']" class="link-inline">Login here</a></p>
+          <p>Already registered? <a [routerLink]="['/Login']" class="link-inline">Login here</a></p>
         </div>
-        </div>
+      </div>
     </div>
     <footer class="component-footer">© 2025 Focusly — Mohamed Tarek</footer>
-    </main>
+  </main>
 </body>

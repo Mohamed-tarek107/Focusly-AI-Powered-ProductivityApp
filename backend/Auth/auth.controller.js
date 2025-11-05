@@ -4,37 +4,41 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
-const cookie = require("cookie-parser")
+const cookieParser = require("cookie-parser")
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 dotenv.config();
 app.use(cookieParser());
-const register = async (req, res) => {
-  const {
-    fname,
-    lname,
-    email,
-    password,
-    confirmpass,
-    phone_number,
-    company,
-    type,
-  } = req.body;
 
-  if (
-    !fname ||
-    !lname ||
-    !email ||
-    !password ||
-    !phone_number ||
-    !company ||
-    !type ||
-    !confirmpass
-) {
-    console.error("Information not Provided");
-    return res.status(400).json({ message: "Information not provided" });
+
+
+
+const register = async (req, res) => {
+    const {
+        fname,
+        lname,
+        email,
+        password,
+        confirmpass,
+        phone_number,
+        company,
+        type,
+    } = req.body;
+
+    if (
+        !fname ||
+        !lname ||
+        !email ||
+        !password ||
+        !phone_number ||
+        !company ||
+        !type ||
+        !confirmpass
+    ) {
+        console.error("Information not Provided");
+        return res.status(400).json({ message: "Information not provided" });
 }
 
   try {
@@ -67,8 +71,8 @@ const register = async (req, res) => {
 
 const LoginUser = async (req, res) => {
     const { email, phone_number, password } = req.body;
-    const SECRET = process.env.JWT_SECRET;
-
+    const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
+    const refreshTokenSECRET = process.env.JWT_Refresh_SECRET;
     if (!password) {
         return res.status(400).json({ message: "Password not provided" });
     }
@@ -97,15 +101,32 @@ const LoginUser = async (req, res) => {
 
     const userId = user.id;
     //jwt
-    const accessToken = jwt.sign({ id: userId }, SECRET, {
+    const accessToken = jwt.sign({ id: userId }, accessTokenSECRET, {
         subject: "accessApi",
         expiresIn: "1h",
     });
 
-    const refreshToken = jwt.sign({ id: userId }, SECRET,{
+    const refreshToken = jwt.sign({ id: userId }, refreshTokenSECRET,{
         subject: "RefreshToken",
-        expiresIn: "2w"
+        expiresIn: "7d"
     })
+
+    await db.execute(
+        "INSERT INTO refreshtokens (user_id, refresh_token, ip_address) VALUES (?,?,?)",
+        [ userId, refreshToken, req.ip] 
+    )
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true, //not accessible in js
+        //local host
+        secure: false,
+        //   production !!!!!!!!!!!!!!
+        //secure: true,
+        path: "/", // only send to this endpoint ( ALL endpoint)
+        sameSite: "strict", // prevent CSRF
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ayam
+    })
+
 
     return res.status(200).json({
         id: userId,
@@ -138,16 +159,46 @@ const currentUser = async (req, res) => {
     }
 };
 
+const refreshRoute = async (req,res) => {
+    const refreshtoken = req.cookies.refreshToken;
+    const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
+
+    if(!refreshtoken) return res.status(401).json({ message: "No Refreshtokens" });
+
+    const [rows] = await db.execute(
+        "SELECT * FROM refreshtokens WHERE refresh_token = ?",
+        [refreshtoken]
+    )
+
+    if(rows.length === 0) return res.status(403).json({ message: "invalid token" })
+
+    jwt.verify(refreshtoken, process.env.JWT_Refresh_SECRET, async (err, user) => {
+        if(err) return res.status(403).json({ message: "expired token"});
+
+
+        try {
+            await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken])
+        } catch (error) {
+            console.error("Error deleting token:", error);
+        }
+
+        
+        const newaccesstoken = jwt.sign({ id: rows[0].user_id }, accessTokenSECRET, {expiresIn: "15m"});
+        res.json({ newaccesstoken }) 
+    })
+}
+
+
 async function ensureAuthenticated(req, res, next) {
     const accessToken = req.headers.authorization.split(' ')[1];
-
+    const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
     if (!accessToken) {
         return res.status(401).json({ message: "Access token not found!" });
     }   
 
 
     try {
-        const decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+        const decodedAccessToken = jwt.verify(accessToken,accessTokenSECRET);
 
         req.user = { id: decodedAccessToken.id };
 
@@ -157,4 +208,4 @@ async function ensureAuthenticated(req, res, next) {
     }
 }
 
-module.exports = { register, LoginUser, ensureAuthenticated, currentUser };
+module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute };

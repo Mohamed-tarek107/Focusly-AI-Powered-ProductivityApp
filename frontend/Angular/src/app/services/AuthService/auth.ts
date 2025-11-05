@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class Auth {
+export class Authservice {
     private AuthApi = 'http://localhost:5000/api/auth';
 
     constructor(private http: HttpClient){}
@@ -32,10 +32,18 @@ export class Auth {
     }
 
     login(email: string,password: string){
-      return this.http.post(`${this.AuthApi}/login`,{
-        email,
-        password,
-      })
+      return this.http.post(`${this.AuthApi}/login`,
+        { email, password },
+        { withCredentials: true }
+      )
+    }
+
+    refreshtoken(){
+      return this.http.post<{ newaccesstoken: string} >(
+        `${this.AuthApi}/refresh-token`,
+        {},
+        {withCredentials: true}
+      );
     }
 
     current(){
@@ -46,4 +54,23 @@ export class Auth {
           }
       })
     }
-}
+    
+    saveAccessToken(token: string){
+      return localStorage.setItem('accessToken', token)
+    }
+
+
+    getaccessToken(): string | null{
+      return localStorage.getItem("accessToken")
+    }
+
+    logout(){
+      localStorage.removeItem('accessToken')
+    }
+
+    isloggedin(): boolean {
+      return !!localStorage.getItem('accessToken') 
+      }
+    }
+
+
