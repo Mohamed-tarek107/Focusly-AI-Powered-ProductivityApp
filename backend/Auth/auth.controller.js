@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser")
+const { validationResult } = require("express-validator");
 const app = express();
 
 app.use(cors());
@@ -16,6 +17,15 @@ app.use(cookieParser());
 
 
 const register = async (req, res) => {
+    
+const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+            message: "Validation failed",
+            errors: errors.array()
+        });
+    }
+
     const {
         fname,
         lname,
@@ -27,21 +37,7 @@ const register = async (req, res) => {
         type,
     } = req.body;
 
-    if (
-        !fname ||
-        !lname ||
-        !email ||
-        !password ||
-        !phone_number ||
-        !company ||
-        !type ||
-        !confirmpass
-    ) {
-        console.error("Information not Provided");
-        return res.status(400).json({ message: "Information not provided" });
-}
-
-  try {
+try {
     const [existingUser] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
         [email]
@@ -54,7 +50,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: "Passwords Doesnt Match" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const [results] = await db.execute(
         `INSERT INTO users ( fname, lname, email, password_hashed, company, type, phone_number) 
@@ -70,18 +66,19 @@ const register = async (req, res) => {
 };
 
 const LoginUser = async (req, res) => {
+    
+const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+            message: "Validation failed",
+            errors: errors.array()
+        });
+    }
+    
     const { email, phone_number, password } = req.body;
     const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
     const refreshTokenSECRET = process.env.JWT_Refresh_SECRET;
-    if (!password) {
-        return res.status(400).json({ message: "Password not provided" });
-    }
 
-    if (!email && !phone_number) {
-    return res
-        .status(400)
-        .json({ message: "Email / Phone number Not Provided" });
-    }
 
     try {
     const [existingUser] = await db.execute(
@@ -131,7 +128,7 @@ const LoginUser = async (req, res) => {
     return res.status(200).json({
         id: userId,
         email: email,
-        accessToken,
+        newaccesstoken: accessToken,
         message: "User Logged in successfully",
     });
     } catch (error) {
@@ -145,6 +142,10 @@ const currentUser = async (req, res) => {
         const [user] = await db.execute("SELECT * FROM users WHERE id = ?", [
         req.user.id,
     ]);
+    
+    if (!user || user.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
     return res.status(200).json({
         id: user[0].id,
@@ -176,13 +177,7 @@ const refreshRoute = async (req,res) => {
         if(err) return res.status(403).json({ message: "expired token"});
 
 
-        try {
-            await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken])
-        } catch (error) {
-            console.error("Error deleting token:", error);
-        }
-
-        
+        await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken])
         const newaccesstoken = jwt.sign({ id: rows[0].user_id }, accessTokenSECRET, {expiresIn: "15m"});
         res.json({ newaccesstoken }) 
     })
@@ -190,8 +185,13 @@ const refreshRoute = async (req,res) => {
 
 
 async function ensureAuthenticated(req, res, next) {
-    const accessToken = req.headers.authorization.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Access token not found!" });
+    }
+    const accessToken = authHeader.split(' ')[1];
     const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
+    
     if (!accessToken) {
         return res.status(401).json({ message: "Access token not found!" });
     }   
