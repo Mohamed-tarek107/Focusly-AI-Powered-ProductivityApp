@@ -7,7 +7,7 @@ const db = mysql.createPool({
   host: 'localhost',   
   user: 'root',         
   password: process.env.DBPass,
-  database: 'productivity_app'     
+  database: 'productivity_app',  
 });
 
 (async () => {

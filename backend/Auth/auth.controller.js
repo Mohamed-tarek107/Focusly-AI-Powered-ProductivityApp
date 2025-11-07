@@ -1,19 +1,7 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser")
 const { validationResult } = require("express-validator");
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-dotenv.config();
-app.use(cookieParser());
-
-
 
 
 const register = async (req, res) => {
@@ -32,8 +20,8 @@ const errors = validationResult(req);
         email,
         password,
         confirmpass,
-        phone_number,
-        company,
+        phone_number = null,
+        company = null,
         type,
     } = req.body;
 
@@ -52,7 +40,7 @@ try {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const [results] = await db.execute(
+    await db.execute(
         `INSERT INTO users ( fname, lname, email, password_hashed, company, type, phone_number) 
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [fname, lname, email, hashedPassword, company, type, phone_number]
@@ -60,7 +48,7 @@ try {
 
         return res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
-        console.error("Error registering user:", error.message);
+        console.error("Register error:", error);
         return res.status(500).json({ message: "Server error" });
 }
 };

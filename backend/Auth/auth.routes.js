@@ -6,15 +6,15 @@ const router = express.Router();
 
 //limiter 
 const limiter = rateLimit({
-    max: 5
-})
+    windowMs: 15 * 60 * 1000,
+    max: 5 
+});
 //validators
 const registerValidation = [
     body('email')
-        .notEmpty()
-        .isEmail()
-        .withMessage('Please provide a valid email address')
-        .normalizeEmail(),
+        .trim()
+        .notEmpty().withMessage('Email is required')
+        .isEmail().withMessage('Please provide a valid email address'),
     
     body('password')
         .isLength({ min: 8 })
@@ -47,16 +47,16 @@ const registerValidation = [
         .withMessage('Last name can only contain letterss'),
     
     body('phone_number')
-        .notEmpty()
-        .isMobilePhone()
-        .withMessage('Please provide a valid phone number'),
-    
-    body('company')
-        .notEmpty()
-        .withMessage('Company/University/School is required')
+        .optional({ checkFalsy: true })
         .trim()
-        .isLength({ min: 2, max: 100 })
-        .withMessage('Company name must be between 2 and 100 characters'),
+        .matches(/^[0-9+\-\s()]+$/)
+        .withMessage('Please provide a valid phone number'),
+
+    body('company')
+        .optional({ checkFalsy: true })
+        .trim()
+        .isLength({ min: 2, max: 100 }).withMessage('Company/University/School is required'),
+        
     
     body('type')
         .isIn(['student', 'employee', 'other'])
