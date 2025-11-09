@@ -99,7 +99,42 @@ const createTask = async (req,res) => {
 
 //put request
 const editTask = async (req,res) => {
+    const { id } = req.params;       
+    const user_id = req.user.user_id; 
+    const { title, description, priority, task_status, assigned_to } = req.body;        
 
+    try {
+        const updates = {}
+        if(title) updates.title = title
+        if(description) updates.description = description
+        if(priority) updates.priority = priority
+        if(task_status) updates.task_status = task_status
+        if(assigned_to) updates.assigned_to = assigned_to
+        
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: "No update data provided." });
+        }
+
+        const query = 
+            "UPDATE tasks SET " +
+            Object.keys(updates)
+            .map((key) => `${key} = ?`)
+            .join(", ") + 
+            " WHERE task_id = ? AND user_id = ?";
+
+            const values = [...Object.values(updates), id, user_id]
+            const [result] = await db.execute(query, values)
+
+            if(result.affectedRows === 0){
+                return res.status(404).json({ message: "Task not found or not owned by user." })
+            }
+
+            res.json({ message: "Task updated successfully." })
+    }catch(error){
+        console.error(error)
+        res.status(500).json({ message: "Server Error"})
+    }
 }
 
 //delete request
