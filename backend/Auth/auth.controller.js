@@ -137,7 +137,7 @@ const currentUser = async (req, res) => {
 
     return res.status(200).json({
         id: user[0].id,
-        name: user[0].fullname,
+        fullname: user[0].fullname,
         email: user[0].email,
         phone_number: user[0].phone_number,
         type: user[0].type,

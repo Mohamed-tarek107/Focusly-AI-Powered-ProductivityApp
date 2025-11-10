@@ -23,7 +23,6 @@ const getAllTasks = async (req, res) => {
             return res.status(404).json({ message: "No tasks found" });
         }
 
-        console.log(`results: ${results}`)
         res.status(200).json(results);
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -48,7 +47,6 @@ const getTask = async (req, res) => {
 
         if(task.length == 0) return res.status(404).json({ message: "No tasks found" });
 
-        console.log(`results: ${task[0]}`)
         res.status(200).json(task[0])
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -60,7 +58,9 @@ const getTask = async (req, res) => {
 //post request
 const createTask = async (req,res) => {
     const userId = req.user.user_id;
-    
+    const priorities = ['Low', 'Medium', 'High', 'Critical'];
+    const statuses = ['In Progress', 'Done', 'Overdue', 'Postponed'] 
+
     const {
         title, 
         task_description,
@@ -82,14 +82,37 @@ const createTask = async (req,res) => {
     ){
         return res.status(500).json({ message: "Provide All Info"})
     }
-    
+    const isValidDate = (dateStr) => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+
+    if (!isValidDate(start_date)) {
+        return res.status(400).json({ message: "Invalid start_date format. Use YYYY-MM-DD." });
+    }
+
+    if (!isValidDate(due_date)) {
+        return res.status(400).json({ message: "Invalid due_date format. Use YYYY-MM-DD." });
+    }
+
+    if (new Date(due_date) < new Date(start_date)) {
+        return res.status(400).json({ message: "due_date cannot be before start_date." });
+    }
+
+    if(!priorities.includes(priority)){
+        return res.status(400).json({ message: "Invalid priority value" });
+    }
+
+    if(!statuses.includes(task_status)){
+        return res.status(400).json({ message: "Invalid task_status value" });
+    }
     try {
-        await db.execute(
+        const [result] = await db.execute(
             "INSERT INTO tasks (title, user_id, task_description, priority, task_status, assigned_to, start_date, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 [title, userId, task_description, priority, task_status, assigned_to, start_date, due_date]
         )
 
-        res.status(200).json({ message: "Task Added successfully"})
+        res.status(200).json({
+            message: "Task Added successfully",
+            task_id: result.task_id,
+        });
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ message: "Error adding task" });
@@ -101,14 +124,27 @@ const createTask = async (req,res) => {
 const editTask = async (req,res) => {
     const { id } = req.params;       
     const user_id = req.user.user_id; 
-    const { title, description, priority, task_status, assigned_to } = req.body;        
+    const { title, task_description, priority, task_status, assigned_to } = req.body;        
+    const priorities = ['Low', 'Medium', 'High', 'Critical'];
+    const statuses = ['In Progress', 'Done', 'Overdue', 'Postponed'];
+
 
     try {
         const updates = {}
         if(title) updates.title = title
-        if(description) updates.description = description
-        if(priority) updates.priority = priority
-        if(task_status) updates.task_status = task_status
+        if(task_description) updates.task_description = task_description
+        if(priority){
+            if(!priorities.includes(priority)){
+                return res.status(400).json({ message: "Invalid priority value" });
+            }
+            updates.priority = priority;
+        }
+        if(task_status) {
+            if(!statuses.includes(task_status)){
+                return res.status(400).json({ message: "Invalid task_status value" });
+            }
+            updates.task_status = task_status;
+        }
         if(assigned_to) updates.assigned_to = assigned_to
         
 
@@ -129,8 +165,12 @@ const editTask = async (req,res) => {
             if(result.affectedRows === 0){
                 return res.status(404).json({ message: "Task not found or not owned by user." })
             }
+            const [updatedTask] = await db.execute(
+            "SELECT * FROM tasks WHERE task_id = ? AND user_id = ?", [id, user_id]
+            );
 
-            res.json({ message: "Task updated successfully." })
+            res.json(updatedTask[0])
+
     }catch(error){
         console.error(error)
         res.status(500).json({ message: "Server Error"})
@@ -150,10 +190,45 @@ const deleteTask = async (req,res) => {
                 "DELETE FROM tasks WHERE task_id = ? AND user_id = ?", 
                 [id, user_id]
             )
-            return res.status(200).json({ message: `Task with id: ${id} was deleted Successfully` })
+        return res.status(200).json({ message: `Task with id: ${id} was deleted Successfully` })
     } catch (error) {
         console.error("Error Deleting task:", error);
         res.status(500).json({ message: "Error Deleting task" });
     }
 }
-module.exports = {getAllTasks, getTask, createTask, editTask, deleteTask}
+
+const markDone = async (req, res) => {
+    const { id } = req.params;
+    const user_id = req.user.user_id;
+
+try {
+    const [result] = await db.execute(
+        "UPDATE tasks SET is_done = 1 WHERE task_id = ? AND user_id = ?",
+        [id, user_id]
+    );
+
+    if (result.affectedRows === 0)
+        return res.status(404).json({ message: "Task not found" });
+
+    res.json({ message: "Task marked as done" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getDoneTasks = async (req,res) => {
+    const userId = req.user.user_id;
+
+    try {
+        const [tasks] = await db.execute(
+            "SELECT * FROM tasks WHERE user_id = ? AND is_done = 1",
+            [userId]
+        )
+
+        res.status(200).json(tasks)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching done tasks" });
+    }
+}
+module.exports = {getAllTasks, getTask, createTask, editTask, deleteTask, markDone, getDoneTasks}
