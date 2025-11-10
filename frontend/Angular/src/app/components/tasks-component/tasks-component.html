@@ -24,7 +24,7 @@
             <div class="task-card-header">
               <h3>{{ task.title }}</h3>
               <div class="task-actions">
-                <button class="action-btn edit" (click)="editTask(task.id)" title="Edit">✏️</button>
+                <!--><button class="action-btn edit" (click)="editTask(task.id)" title="Edit">✏️</button>-->
                 <button class="action-btn delete" (click)="deleteTask(task.id)" title="Delete">🗑️</button>
               </div>
             </div>
@@ -38,17 +38,17 @@
             </div>
 
             <div class="task-meta">
-              <span class="task-time">{{ task.time }}</span>
+              <span class="task-time">{{ '' }}</span>
             </div>
 
             <div class="task-details">
               <div class="detail-item">
                 <span class="detail-label">Date:</span>
-                <span>{{ task.date }}</span>
+                <span>{{ task.startdate }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Time Left:</span>
-                <span>{{ task.timeLeft }}</span>
+                <span>{{ task.due_date }}</span>
               </div>
             </div>
 

@@ -48,7 +48,7 @@ export class Authservice {
 
     current(){
       const accessToken = localStorage.getItem('accessToken')
-      return this.http.get(`${this.AuthApi}/current`,{
+      return this.http.get<{ fullname: string }>(`${this.AuthApi}/current`,{
         headers:{
           Authorization: `Bearer ${accessToken}`
           }

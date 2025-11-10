@@ -1,15 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Navbar } from '../navbar/navbar';
+import { Authservice } from '../../services/AuthService/auth';
+import { TasksService } from '../../services/TasksService/tasks-service';
+import { Status, Priority } from '../../services/TasksService/tasks-service';
+
+
 
 interface Task {
   id: number;
   title: string;
   description: string;
-  priority: string;
-  date: string;
-  time: string;
-  timeLeft: string;
+  priority: Priority;
+  task_status: Status;
+  assigned_to: string;
+  startdate: string;
+  due_date: string;
+  // is_done: boolean;
+}
+
+interface update {
+  priority?: Priority;
+  task_status?: Status;
+  title?: string;
+  task_description?: string;
+  assigned_to?: string;
 }
 
 @Component({
@@ -22,112 +37,130 @@ interface Task {
 export class TasksComponent implements OnInit {
   isNavbarCollapsed = false;
   tasks: Task[] = [];
-  currentUser = 'Mohamed Tarek';
+  currentUser = '';
+  title  = '';
+  task_description = '';
+  priority = '';
+  task_status = '';
+  assigned_to = '';
+  start_date = '';
+  due_date = '';
 
-  constructor() {
-    console.log('✅ TasksComponent CONSTRUCTOR called');
-  }
+  constructor(private auth: Authservice, private task: TasksService) {}
 
   ngOnInit() {
     console.log('✅ TasksComponent ngOnInit called');
+    this.auth.current().subscribe({
+      next: (res) => {
+      this.currentUser  = res.fullname
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
     this.loadTasks();
     console.log('✅ Tasks loaded:', this.tasks);
   }
-
+  ;
   loadTasks() {
-    this.tasks = [
-      {
-        id: 1,
-        title: 'Design System Update',
-        description:
-          'Create and document a comprehensive design system for the Focusly application with color palettes, typography, and component guidelines.',
-        priority: 'High',
-        date: '2024-01-15',
-        time: '2:30 PM',
-        timeLeft: '2h 30m',
+    this.task.getAllTasks().subscribe({
+      next: (res: any) => {
+        if(res && res.length > 0){
+          this.tasks = res.map((task: any) => ({
+            id: task.task_id,
+            title: task.title,
+            description: task.task_description,
+            priority: task.priority,
+            startdate: task.start_date,
+            task_status: task.task_status,
+            assigned_to: task.assigned_to,
+            is_done: task.is_done === 1
+          }));
+        }
       },
-      {
-        id: 2,
-        title: 'Meow',
-        description:
-          'Meow Meow Meow Meow MeowMeow MeowMeowMeowMeowMeowMeowMeowMeowMeow Meow',
-        priority: 'Meow',
-        date: '2026-01-15',
-        time: '10:30 PM',
-        timeLeft: '10h 30m',
-      },
-      {
-        id: 3,
-        title: 'Tarek bs title test',
-        description:
-          'Tarek bs description-Tarek bs description-Tarek bs description-Tarek bs description-Tarek bs description-Tarek bs description-Tarek bs description',
-        priority: 'Tarek bs priority',
-        date: '2026-01-15',
-        time: '10:30 PM',
-        timeLeft: '9h 30m',
-      },
-      {
-        id: 4,
-        title: 'TEST',
-        description:
-          'TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST',
-        priority: 'low',
-        date: '2026-01-15',
-        time: '10:30 PM',
-        timeLeft: '18h 30m',
-      },
-      {
-        id: 5,
-        title: 'tarek test 6',
-        description:
-          'TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST',
-        priority: 'medium',
-        date: '2026-01-15',
-        time: '10:30 PM',
-        timeLeft: '5h 30m',
-      },
-      {
-        id: 5,
-        title: 'tarek test 6',
-        description:
-          'TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST',
-        priority: 'Low',
-        date: '2026-01-15',
-        time: '10:30 PM',
-        timeLeft: '1h 30m',
+      error: (err) => {
+        console.error('❌ Error fetching tasks:', err);
       }
-    ];
+    })
   }
 
   toggleNavbar() {
     this.isNavbarCollapsed = !this.isNavbarCollapsed;
   }
 
-  editTask(taskId: number) {
-    console.log('Editing task:', taskId);
+  editTask(taskId: number, updates: update) {
+    this.task.editTask(taskId, updates).subscribe({
+      next: (updatedTask: any) => {
+          const index = this.tasks.findIndex(t => t.id === taskId);
+
+          if(index !== -1){
+            this.tasks[index] = {
+              id: updatedTask.task_id,
+              title: updatedTask.title,
+              description: updatedTask.task_description,
+              priority: updatedTask.priority,
+              task_status: updatedTask.task_status,
+              assigned_to: updatedTask.assigned_to,
+              startdate: updatedTask.start_date,
+              due_date: updatedTask.due_date,
+              // is_done: task.is_done
+            }
+          }
+      },
+      error: (error) => console.log(error)
+    })
   }
 
   deleteTask(taskId: number) {
-    this.tasks = this.tasks.filter((task) => task.id !== taskId);
+    this.task.deleteTask(taskId).subscribe({
+      next: (res: any) => {
+        console.log('🗑️ Task deleted', res.message);
+        this.tasks = this.tasks.filter((task) => task.id !== taskId);
+      },
+      error:(err) => {
+        console.log("Error Deleting Task:", err)
+      }
+    })
   }
 
-  addTask(newTask: Task) {
-    this.tasks.push(newTask);
+  addTask(title: string, description: string, priority:Priority,task_status: Status,assigned_to:string, start_date:string, due_date: string) {
+    this.task.createTask(title, description,priority,task_status,assigned_to,start_date,due_date)
+    .subscribe({
+      next: (res) => {
+        console.log('Task Created')
+
+        this.tasks.push({
+          id: res.task_id,
+          title: title,
+          description: description,
+          priority: priority,
+          task_status: task_status,
+          assigned_to: assigned_to,
+          startdate: start_date,
+          due_date: due_date
+        })
+      },
+      error: (error) => {
+        console.log("Adding Failed: ", error.message)
+      }
+    })
   }
 
 
-  markInProgress(taskId: number) {
-    const task = this.tasks.find((task) => task.id === taskId);
-    if (task) {
-      console.log('Task marked as In Progress:', task.title);
-    }
-  }
+    markInProgress(taskId: number) {}
+  //   const task = this.tasks.find((task) => task.id === taskId);
+  //   if (task) {
+  //     console.log('Task marked as In Progress:', task.title);
+  //   }
+  // }
   
-  markDone(taskId: number) {
-    const task = this.tasks.find((task) => task.id === taskId);
-    if (task) {
-      console.log('Task marked as Done:', task.title);
-    }
-  }
+    markDone(taskId: number) {}
+  //   this.task.markDone(taskId).subscribe({
+  //     next: (res) => {
+  //       const task = this.tasks.find((task) => task.id === taskId);
+  //     }
+  //   })
+    
+  // }
 }
 
