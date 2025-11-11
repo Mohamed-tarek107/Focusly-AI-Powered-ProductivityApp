@@ -10,13 +10,13 @@ import { Status, Priority } from '../../services/TasksService/tasks-service';
 interface Task {
   id: number;
   title: string;
-  description: string;
+  task_description: string;
   priority: Priority;
   task_status: Status;
   assigned_to: string;
   startdate: string;
   due_date: string;
-  // is_done: boolean;
+  is_done?: boolean;
 }
 
 interface update {
@@ -61,7 +61,7 @@ export class TasksComponent implements OnInit {
     this.loadTasks();
     console.log('✅ Tasks loaded:', this.tasks);
   }
-  ;
+
   loadTasks() {
     this.task.getAllTasks().subscribe({
       next: (res: any) => {
@@ -74,8 +74,9 @@ export class TasksComponent implements OnInit {
             startdate: task.start_date,
             task_status: task.task_status,
             assigned_to: task.assigned_to,
-            is_done: task.is_done === 1
-          }));
+            is_done: task.is_done == 1,
+          }))
+          console.log('✅ Tasks loaded:', this.tasks);
         }
       },
       error: (err) => {
@@ -97,19 +98,19 @@ export class TasksComponent implements OnInit {
             this.tasks[index] = {
               id: updatedTask.task_id,
               title: updatedTask.title,
-              description: updatedTask.task_description,
+              task_description: updatedTask.task_description,
               priority: updatedTask.priority,
               task_status: updatedTask.task_status,
               assigned_to: updatedTask.assigned_to,
               startdate: updatedTask.start_date,
               due_date: updatedTask.due_date,
-              // is_done: task.is_done
             }
           }
       },
       error: (error) => console.log(error)
     })
   }
+
 
   deleteTask(taskId: number) {
     this.task.deleteTask(taskId).subscribe({
@@ -123,21 +124,22 @@ export class TasksComponent implements OnInit {
     })
   }
 
-  addTask(title: string, description: string, priority:Priority,task_status: Status,assigned_to:string, start_date:string, due_date: string) {
-    this.task.createTask(title, description,priority,task_status,assigned_to,start_date,due_date)
+
+  addTask(title: string, task_description: string, priority:Priority,task_status: Status,assigned_to:string, start_date:string, due_date: string) {
+    this.task.createTask(title, task_description,priority,task_status,assigned_to,start_date,due_date)
     .subscribe({
       next: (res) => {
         console.log('Task Created')
 
         this.tasks.push({
-          id: res.task_id,
+          id: res.insertId,
           title: title,
-          description: description,
+          task_description: task_description,
           priority: priority,
           task_status: task_status,
           assigned_to: assigned_to,
           startdate: start_date,
-          due_date: due_date
+          due_date: due_date,
         })
       },
       error: (error) => {
@@ -147,6 +149,17 @@ export class TasksComponent implements OnInit {
   }
 
 
+  markDone(taskId: number) {
+      this.task.markDone(taskId).subscribe({
+        next: (res) => {
+          setTimeout(() => {
+            this.tasks = this.tasks.filter((task) => task.id !== taskId);
+          },1000)
+          console.log(`Marked Done: ${taskId}`)
+        }
+      })
+}
+
     markInProgress(taskId: number) {}
   //   const task = this.tasks.find((task) => task.id === taskId);
   //   if (task) {
@@ -154,13 +167,6 @@ export class TasksComponent implements OnInit {
   //   }
   // }
   
-    markDone(taskId: number) {}
-  //   this.task.markDone(taskId).subscribe({
-  //     next: (res) => {
-  //       const task = this.tasks.find((task) => task.id === taskId);
-  //     }
-  //   })
-    
-  // }
+
 }
 

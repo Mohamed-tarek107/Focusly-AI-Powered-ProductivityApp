@@ -15,13 +15,10 @@ const getAllTasks = async (req, res) => {
     
     try {
         const [results] = await db.execute(
-            "SELECT * FROM tasks WHERE user_id = ?",
+            "SELECT * FROM tasks WHERE is_done = 0 AND user_id = ? ",
             [userId]
         )
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: "No tasks found" });
-        }
 
         res.status(200).json(results);
     } catch (error) {
@@ -71,6 +68,9 @@ const createTask = async (req,res) => {
         due_date
     } = req.body
     
+
+    //=================================
+    // Validations
     if( 
         !title ||
         !task_description ||
@@ -82,7 +82,7 @@ const createTask = async (req,res) => {
     ){
         return res.status(500).json({ message: "Provide All Info"})
     }
-    const isValidDate = (dateStr) => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+    const isValidDate = (dateStr) => /^\d{4}-\d{2}-\d{2}$/.test(dateStr); // YYYY-MM-DD // Efteker 3shan el front
 
     if (!isValidDate(start_date)) {
         return res.status(400).json({ message: "Invalid start_date format. Use YYYY-MM-DD." });
@@ -103,6 +103,11 @@ const createTask = async (req,res) => {
     if(!statuses.includes(task_status)){
         return res.status(400).json({ message: "Invalid task_status value" });
     }
+    if (assigned_to.length > 30) {
+        return res.status(400).json({ message: "assigned_to too long (max 30 chars)" });
+    }
+    //==========================================
+
     try {
         const [result] = await db.execute(
             "INSERT INTO tasks (title, user_id, task_description, priority, task_status, assigned_to, start_date, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -111,7 +116,7 @@ const createTask = async (req,res) => {
 
         res.status(200).json({
             message: "Task Added successfully",
-            task_id: result.task_id,
+            id: result.insertId,
         });
     } catch (error) {
         console.error("Error adding task:", error);
@@ -186,10 +191,14 @@ const deleteTask = async (req,res) => {
         if (!id){
             return res.status(400).json({ message: "Task ID is required" });
         }
-            await db.execute(
+        const [result] = await db.execute(
                 "DELETE FROM tasks WHERE task_id = ? AND user_id = ?", 
                 [id, user_id]
             )
+
+            if (result.affectedRows === 0)
+                return res.status(404).json({ message: "Task not found or not owned by user" });
+
         return res.status(200).json({ message: `Task with id: ${id} was deleted Successfully` })
     } catch (error) {
         console.error("Error Deleting task:", error);
