@@ -114,10 +114,12 @@ const createTask = async (req,res) => {
                 [title, userId, task_description, priority, task_status, assigned_to, start_date, due_date]
         )
 
-        res.status(200).json({
-            message: "Task Added successfully",
-            id: result.insertId,
-        });
+        const [newTask] = await db.execute(
+            "SELECT * FROM tasks WHERE task_id = ?",
+            [result.insertId]
+        );
+
+res.status(200).json(newTask[0],{message: "Task Added successfully",});
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ message: "Error adding task" });

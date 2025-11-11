@@ -9,15 +9,17 @@ const app = express();
 app.use(cookieParser());
 
 app.use(cors({
-    origin: "http://localhost:4200" || "https://48d72dp2-4200.euw.devtunnels.ms",
+    origin: "http://localhost:4200",
     credentials: true,
     methods: ["GET", "POST","PUT","DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
-app.use("/api/auth ", authRoutes); //base url
-app.use("/api/tasks", tasksApi  );  
+// Base routes
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", tasksApi);
 
-const PORT = 3000;
+// Use PORT from env when available (common for deployed setups), default to 5000
+const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
