@@ -6,8 +6,8 @@ import { catchError, Observable, throwError, switchMap } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class Interceptors implements HttpInterceptor{
-  constructor(private auth: Authservice){}
+export class Interceptors implements HttpInterceptor {
+  constructor(private auth: Authservice) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     //get token 

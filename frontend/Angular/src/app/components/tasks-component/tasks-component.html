@@ -7,7 +7,7 @@
         <h1 class="page-title">Tasks</h1>
       </div>
       <div class="header-right">
-        <button class="header-btn">➕</button>
+        <button class="header-btn" (click)="openAddModal()">➕</button>
         <div class="user-menu">
           <span>{{ currentUser }}</span>
           <span class="dropdown">▼</span>
@@ -24,21 +24,16 @@
             <div class="task-card-header">
               <h3>{{ task.title }}</h3>
               <div class="task-actions">
-                <!--><button class="action-btn edit" (click)="editTask(task.id)" title="Edit">✏️</button>-->
                 <button class="action-btn delete" (click)="deleteTask(task.id)" title="Delete">🗑️</button>
               </div>
             </div>
 
-            <p class="task-description">{{ task.description }}</p>
+            <p class="task-description">{{ task.task_description }}</p>
 
             <div class="task-priority-section">
               <span class="priority-badge" [ngClass]="'priority-' + task.priority.toLowerCase()">
                 {{ task.priority }}
               </span>
-            </div>
-
-            <div class="task-meta">
-              <span class="task-time">{{ '' }}</span>
             </div>
 
             <div class="task-details">
@@ -53,7 +48,6 @@
             </div>
 
             <div class="task-status-buttons">
-              <button class="status-btn in-progress" (click)="markInProgress(task.id)">📋 In Progress</button>
               <button class="status-btn done" (click)="markDone(task.id)">✅ Done</button>
             </div>
           </div>
@@ -67,5 +61,120 @@
         </div>
       </ng-template>
     </section>
+  </div>
+
+  <!-- Add Task Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-decorative"></div>
+      
+      <div class="modal-header">
+        <h2>Create New Task</h2>
+        <button class="modal-close" (click)="closeAddModal()">✕</button>
+      </div>
+
+      <form class="modal-form" (ngSubmit)="submitTask()">
+        <div class="form-group">
+          <label for="title">Task Title *</label>
+          <input 
+            type="text" 
+            id="title" 
+            class="form-input"
+            [(ngModel)]="title" 
+            name="title"
+            placeholder="Enter task title"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea 
+            id="description" 
+            class="form-textarea"
+            [(ngModel)]="task_description" 
+            name="task_description"
+            placeholder="Enter task description"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="priority">Priority</label>
+            <select 
+              id="priority" 
+              class="form-select"
+              [(ngModel)]="priority" 
+              name="priority"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select 
+              id="status" 
+              class="form-select"
+              [(ngModel)]="task_status" 
+              name="task_status"
+            >
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+              <option value="Overdue">Overdue</option>
+              <option value="Postponed">Postponed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="assigned">Assigned To</label>
+          <input 
+            type="text" 
+            id="assigned" 
+            class="form-input"
+            [(ngModel)]="assigned_to" 
+            name="assigned_to"
+            placeholder="Enter assignee name"
+          >
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Start Date *</label>
+            <input 
+              type="date" 
+              id="startDate" 
+              class="form-input"
+              [(ngModel)]="start_date" 
+              name="start_date"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="dueDate">Due Date *</label>
+            <input 
+              type="date" 
+              id="dueDate" 
+              class="form-input"
+              [(ngModel)]="due_date" 
+              name="due_date"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn-create">Create Task</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

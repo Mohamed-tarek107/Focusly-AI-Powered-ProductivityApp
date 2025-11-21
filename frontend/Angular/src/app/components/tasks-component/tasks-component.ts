@@ -1,13 +1,15 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Navbar } from '../navbar/navbar';
 import { Authservice } from '../../services/AuthService/auth';
 import { TasksService } from '../../services/TasksService/tasks-service';
 import { Status, Priority } from '../../services/TasksService/tasks-service';
+import { FormsModule } from '@angular/forms';
 
 
 
 interface Task {
+  task_id?: number
   id: number;
   title: string;
   task_description: string;
@@ -17,6 +19,7 @@ interface Task {
   startdate: string;
   due_date: string;
   is_done?: boolean;
+  user_id?: number;
 }
 
 interface update {
@@ -29,19 +32,20 @@ interface update {
 
 @Component({
   selector: 'app-tasks-component',
-  imports: [CommonModule, Navbar],
+  imports: [CommonModule, Navbar,FormsModule],
   standalone: true,
   templateUrl: './tasks-component.html',
-  styleUrls: ['./tasks-component.css'],
+  styleUrls: ['./tasks-component.css']
 })
 export class TasksComponent implements OnInit {
   isNavbarCollapsed = false;
   tasks: Task[] = [];
+  showAddModal = false;
   currentUser = '';
   title  = '';
   task_description = '';
-  priority = '';
-  task_status = '';
+  priority = 'Medium';
+  task_status = 'In Progress';
   assigned_to = '';
   start_date = '';
   due_date = '';
@@ -69,11 +73,12 @@ export class TasksComponent implements OnInit {
           this.tasks = res.map((task: any) => ({
             id: task.task_id,
             title: task.title,
-            description: task.task_description,
+            task_description: task.task_description,
             priority: task.priority,
             startdate: task.start_date,
             task_status: task.task_status,
             assigned_to: task.assigned_to,
+            due_date: task.due_date,
             is_done: task.is_done == 1,
           }))
           console.log('✅ Tasks loaded:', this.tasks);
@@ -128,11 +133,11 @@ export class TasksComponent implements OnInit {
   addTask(title: string, task_description: string, priority:Priority,task_status: Status,assigned_to:string, start_date:string, due_date: string) {
     this.task.createTask(title, task_description,priority,task_status,assigned_to,start_date,due_date)
     .subscribe({
-      next: (res) => {
+      next: (res: any) => {
         console.log('Task Created')
 
         this.tasks.push({
-          id: res.insertId,
+          id: res.id,
           title: title,
           task_description: task_description,
           priority: priority,
@@ -158,15 +163,45 @@ export class TasksComponent implements OnInit {
           console.log(`Marked Done: ${taskId}`)
         }
       })
-}
+  }
 
-    markInProgress(taskId: number) {}
-  //   const task = this.tasks.find((task) => task.id === taskId);
-  //   if (task) {
-  //     console.log('Task marked as In Progress:', task.title);
-  //   }
-  // }
-  
+
+  openAddModal(){
+    this.showAddModal = true;
+  }
+
+  closeAddModal(){
+    this.showAddModal = false;
+    this.resetForm();
+  }
+
+  resetForm(){
+    this.title = '';
+    this.task_description = '';
+    this.priority = 'Medium';
+    this.task_status = 'In Progress';
+    this.assigned_to = '';
+    this.start_date = '';
+    this.due_date = '';
+  }
+
+  submitTask(){
+    if(!this.title || !this.task_description || !this.start_date || !this.due_date){
+      alert('Please fill in all required fields');
+      return;
+    }
+  this.addTask(
+    this.title,
+    this.task_description,
+    this.priority as Priority,
+    this.task_status as Status,
+    this.assigned_to,
+    this.start_date,
+    this.due_date
+  );
+
+  this.closeAddModal();
+}
 
 }
 
