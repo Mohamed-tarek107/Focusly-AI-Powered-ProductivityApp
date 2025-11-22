@@ -113,8 +113,8 @@
           <div class="calendar-grid">
             <div class="calendar-day-header" *ngFor="let day of dayHeaders">{{ day }}</div>
             <div class="calendar-day" *ngFor="let date of calendarDates" 
-                 [class.today]="date === 23"
-                 [class.other-month]="date === 0">
+                [class.today]="date === 23"
+                [class.other-month]="date === 0">
               {{ date === 0 ? '' : date }}
             </div>
           </div>
