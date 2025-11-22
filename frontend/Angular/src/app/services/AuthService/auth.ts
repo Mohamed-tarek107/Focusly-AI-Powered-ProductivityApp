@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Authservice {
-    private AuthApi = 'http://localhost:3000/api/auth';
+    private AuthApi = 'http://localhost:5000/api/auth';
 
     constructor(private http: HttpClient){}
 
@@ -48,6 +49,13 @@ export class Authservice {
 
     current(){
       const accessToken = localStorage.getItem('accessToken')
+
+      if (!accessToken) {
+        return new Observable(observer => {
+          observer.error({ message: 'No token found' });
+        });
+      }
+      
       return this.http.get<{ fullname: string }>(`${this.AuthApi}/current`,{
         headers:{
           Authorization: `Bearer ${accessToken}`

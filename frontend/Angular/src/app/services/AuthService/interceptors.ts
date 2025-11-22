@@ -12,15 +12,18 @@ export class Interceptors implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     //get token 
     const token = this.auth.getaccessToken()
+    console.log('🔍 Token exists:', !!token);
+    console.log('🔍 Request URL:', req.url);
 
+    let authReq = req;
     if(token){
-        req = req.clone({
+        authReq = req.clone({
           setHeaders: {
             Authorization: `Bearer ${token}`
           }
         })
     }
-    return next.handle(req).pipe(
+    return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if(error.status === 401){
           

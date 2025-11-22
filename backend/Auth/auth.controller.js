@@ -165,8 +165,33 @@ const refreshRoute = async (req,res) => {
         if(err) return res.status(403).json({ message: "expired token"});
 
 
-        await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken])
-        const newaccesstoken = jwt.sign({ id: rows[0].user_id }, accessTokenSECRET, {expiresIn: "15m"});
+        const newRefreshToken = jwt.sign(
+                { id: rows[0].user_id }, 
+                refreshTokenSECRET,
+                { subject: "RefreshToken", expiresIn: "7d" }
+            );
+
+            //  Replace old with new
+            await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken]);
+            await db.execute(
+                "INSERT INTO refreshtokens (user_id, refresh_token, ip_address) VALUES (?, ?, ?)",
+                [rows[0].user_id, newRefreshToken, req.ip]
+            );
+
+            //  Update cookie
+            res.cookie("refreshToken", newRefreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
+            const newaccesstoken = jwt.sign(
+                { id: rows[0].user_id }, 
+                accessTokenSECRET, 
+                { expiresIn: "15m" }
+            );
         res.json({ newaccesstoken }) 
     })
 }
@@ -175,6 +200,7 @@ const refreshRoute = async (req,res) => {
 async function ensureAuthenticated(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.warn('Authorization header missing or malformed');
         return res.status(401).json({ message: "Access token not found!" });
     }
     const accessToken = authHeader.split(' ')[1];
@@ -188,7 +214,8 @@ async function ensureAuthenticated(req, res, next) {
     try {
         const decodedAccessToken = jwt.verify(accessToken,accessTokenSECRET);
 
-        req.user = { id: decodedAccessToken.id };
+        // Provide both `id` and `user_id` to support different handlers
+        req.user = { id: decodedAccessToken.id, user_id: decodedAccessToken.id };
 
         next();
     } catch (error) {

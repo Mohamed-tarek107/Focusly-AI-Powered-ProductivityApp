@@ -20,7 +20,7 @@
 
       <div *ngIf="tasks.length > 0; else empty">
         <div class="tasks-container">
-          <div *ngFor="let task of tasks" class="task-card">
+          <div *ngFor="let task of tasks"  class="task-card">
             <div class="task-card-header">
               <h3>{{ task.title }}</h3>
               <div class="task-actions">
@@ -39,7 +39,7 @@
             <div class="task-details">
               <div class="detail-item">
                 <span class="detail-label">Date:</span>
-                <span>{{ task.startdate }}</span>
+                <span>{{ task.start_date }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Time Left:</span>

@@ -119,7 +119,11 @@ const createTask = async (req,res) => {
             [result.insertId]
         );
 
-res.status(200).json(newTask[0],{message: "Task Added successfully",});
+res.status(200).json({
+    task: newTask[0],
+    message: "Task Added successfully"
+    });
+    
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ message: "Error adding task" });
