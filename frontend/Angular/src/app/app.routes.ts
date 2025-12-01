@@ -4,6 +4,7 @@ import { Login } from './components/Auth/login/login';
 import { ForgetPage } from './components/Auth/forget-page/forget-page';
 import { Dashboard } from './components/dashboard/dashboard';
 import { TasksComponent } from './components/tasks-component/tasks-component';
+import { AiAssistant } from './components/AiAssistant/ai-assistant/ai-assistant';
 
 
 export const routes: Routes = [
@@ -12,5 +13,6 @@ export const routes: Routes = [
     { path: 'Register', component: Register },
     { path: 'Forget', component: ForgetPage},
     { path: 'Dashboard', component: Dashboard},
-    { path: 'Tasks', component: TasksComponent}
+    { path: 'Tasks', component: TasksComponent},
+    { path: 'AiAssistant', component: AiAssistant}
 ];

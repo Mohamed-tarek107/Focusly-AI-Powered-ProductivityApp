@@ -1,1 +1,48 @@
-<p>ai-assistant works!</p>
+<div class="app-container">
+  <app-navbar></app-navbar>
+
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <h1 class="h1Header">AI Assistant</h1>
+      <button class="clear-btn" (click)="clearChat()">Clear</button>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <!-- Welcome -->
+      <div class="welcome" *ngIf="messages.length === 0">
+        <div class="icon">🤖</div>
+        <h2>Hi! I'm your AI Assistant</h2>
+        <p>Type a message to get started</p>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages">
+        <div *ngFor="let msg of messages" [class]="'message ' + msg.role">
+          <div class="avatar">{{ msg.role === 'user' ? '👤' : '🤖' }}</div>
+          <div class="bubble">{{ msg.text }}</div>
+        </div>
+
+        <!-- Typing -->
+        <div class="message model" *ngIf="isTyping">
+          <div class="avatar">🤖</div>
+          <div class="bubble typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <input 
+        type="text"
+        class="input"
+        placeholder="Type a message..."
+        [(ngModel)]="userInput"
+        (keydown.enter)="sendMessage()">
+      <button class="send-btn" (click)="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
