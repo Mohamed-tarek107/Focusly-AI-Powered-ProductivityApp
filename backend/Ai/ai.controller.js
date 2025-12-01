@@ -1,10 +1,6 @@
 const GeminiService = require("./gemini-service")
 const {createTask} = require('../Tasks/taskService')
 require("dotenv").config()
-const express = require("express");
-const app = express();
-
-app.use(express.json());
 
 class AiController {
     constructor(){
