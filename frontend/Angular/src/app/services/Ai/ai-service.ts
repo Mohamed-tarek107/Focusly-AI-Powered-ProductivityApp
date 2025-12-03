@@ -14,7 +14,7 @@ export class AiService {
       this.token = localStorage.getItem('accessToken');
     }
 
-    chat(msg: string, history: []){ 
+    chat(msg: string, history: any []){ 
       return this.http.post(`${this.chatApi}/chat`, 
           {msg, history},
         {

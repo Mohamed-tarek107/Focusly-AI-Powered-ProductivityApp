@@ -1,7 +1,8 @@
-import { AfterContentChecked, AfterViewChecked, Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../navbar/navbar';
 import { CommonModule } from '@angular/common';
+import { AiService } from '../../../services/Ai/ai-service';
 
 interface Message {
   role: 'user' | 'model';
@@ -10,42 +11,56 @@ interface Message {
 
 @Component({
   selector: 'app-ai-assistant',
-  imports: [CommonModule, Navbar,FormsModule],
+  standalone: true,
+  imports: [CommonModule, Navbar, FormsModule],
   templateUrl: './ai-assistant.html',
-  styleUrl: './ai-assistant.css'
+  styleUrls: ['./ai-assistant.css']
 })
-export class AiAssistant{
+export class AiAssistant {
   currentUser = 'User';
   userInput = '';
   messages: Message[] = [];
   isTyping = false;
 
+  constructor(private ai: AiService) {}
+
   sendMessage() {
     if (!this.userInput.trim()) return;
 
-    // Add user message
-    this.messages.push({
+    const messageText = this.userInput;
+    
+    this.messages.push({ 
       role: 'user',
-      text: this.userInput
+      text: messageText
     });
 
     this.userInput = '';
-    
-    // TODO: Call your AI service here
-    // For now, just simulate response
-    this.mockAiResponse();
+    this.AiResponse(messageText);
   }
 
-  mockAiResponse() {
+  AiResponse(messageText: string) {
     this.isTyping = true;
-    
-    setTimeout(() => {
-      this.messages.push({
-        role: 'model',
-        text: 'Hello! I am your AI assistant Tarek Tarek Tarek Tarek v Tarek v Tarek v vTarekvvTarek v TarekTarekTarekTarekTarekTarek v Tarek v v v Tarek Tarek v v v v Tarek v Tarek v Tarek Tarek v v v v v v v v TarekvTarek v Tarek TarekTarek. Connect me to the backend to start chatting!'
-      });
-      this.isTyping = false;
-    }, 1000);
+
+    const historytosend = this.messages.slice(0,-1)
+    this.ai.chat(messageText, historytosend).subscribe({
+      next: (res: any) => {
+        setTimeout(() => {
+          this.messages.push({
+            role: 'model',
+            text: res.message
+          });
+          this.isTyping = false;
+        }, 1000);
+      },
+      error: (err: any) => {
+        console.error('AI Error:', err);
+        this.messages.push({
+          role: 'model',
+          text: 'Sorry, I encountered an error. Please try again.'
+        });
+        this.isTyping = false;
+      }
+    });
   }
 
   clearChat() {
@@ -55,10 +70,12 @@ export class AiAssistant{
   }
 
   handleEnter(event: KeyboardEvent) {
+    // KeyboardEvent has `key` and `shiftKey`, so this is safe when typed as KeyboardEvent
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
     }
   }
 }
+
 

@@ -32,14 +32,16 @@ class AiController {
 
             if (parsedReply.command === "CreateTask") {
                 const createdTask = await createTask(parsedReply, req.user.user_id );
-                return res.json({ message: parsedReply.message, task: createdTask, newHistory: newHistory});
+                return res.json({ 
+                    message: parsedReply.message,
+                    task: createdTask,
+                    newHistory: newHistory});
             }
 
             return res.json({
-                reply: aiReply,
+                message: aiReply,
                 newHistory: newHistory
             })
-
 
         } catch (error) {
             console.error("AI ERROR:", error);

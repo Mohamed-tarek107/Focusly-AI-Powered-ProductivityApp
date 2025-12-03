@@ -46,8 +46,8 @@ class GeminiService{
 
             **Required Fields:**
             - title (string, required)
-            - start_date (string, required, format: "DD-MM-YYYY", example: "25-12-2024")
-            - due_date (string, required, format: "DD-MM-YYYY", example: "30-12-2024")
+            - start_date (string, required, format: "YYYY-MM-DD", example: "2023-12-25")
+            - due_date (string, required, format: "YYYY-MM-DD", example: "2024-12-23")
             - assigned_to (string, required, name of person)
 
             **Optional Fields:**
@@ -75,8 +75,8 @@ class GeminiService{
                 "command": "CreateTask",
                 "title": "Complete project proposal",
                 "task_description": "N/A",
-                "start_date": "25-12-2024",
-                "due_date": "30-12-2024",
+                "start_date": "2024-12-22",
+                "due_date": "2024-12-30",
                 "priority": "high",
                 "task_status": "in progress",
                 "assigned_to": "Mohamed Tarek",
@@ -133,7 +133,7 @@ class GeminiService{
             ===================
             ## DATE HANDLING
             ===================
-            - Today's date format: DD-MM-YYYY
+            - Today's date format: YYYY-MM-DD
             - If user says "tomorrow", calculate the date
             - If user says "next week", ask for specific date
             - Always validate dates are in the future (for due dates)
@@ -149,7 +149,7 @@ class GeminiService{
 
             Example 2: Partial Information
             User: "create a task called 'Study Math' due on 25-12-2024"
-            You: "Got it! I need two more things: the start date (DD-MM-YYYY) and who this task is assigned to."
+            You: "Got it! I need two more things: the start date (YYYY-MM-DD) and who this task is assigned to."
 
             Example 3: Complete Information
             User: "assign it to Mohamed, starting today 20-12-2024"
