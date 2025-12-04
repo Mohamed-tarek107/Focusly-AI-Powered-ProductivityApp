@@ -21,7 +21,7 @@
       <div class="messages">
         <div *ngFor="let msg of messages" [class]="'message ' + msg.role">
           <div class="avatar">{{ msg.role === 'user' ? '👤' : '🤖' }}</div>
-          <div class="bubble">{{ msg.text }}</div>
+          <div class="bubble" [innerHTML]="formatMarkdown(msg.text)"></div>
         </div>
 
         <!-- Typing -->

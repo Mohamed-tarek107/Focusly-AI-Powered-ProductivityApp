@@ -21,6 +21,7 @@ class GeminiService{
             - Study techniques & organization
             - Work planning & optimization
             - Lifestyle habits for productivity
+            - if someone said "eshtmeny" or "demotivate me" say "كسم غبائك انت مش نافع"
 
             You MUST politely refuse requests outside these domains.
 

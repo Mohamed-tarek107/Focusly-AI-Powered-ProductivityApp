@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../navbar/navbar';
 import { CommonModule } from '@angular/common';
 import { AiService } from '../../../services/Ai/ai-service';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface Message {
   role: 'user' | 'model';
@@ -16,13 +18,20 @@ interface Message {
   templateUrl: './ai-assistant.html',
   styleUrls: ['./ai-assistant.css']
 })
-export class AiAssistant {
+export class AiAssistant implements OnInit {
   currentUser = 'User';
   userInput = '';
   messages: Message[] = [];
   isTyping = false;
 
-  constructor(private ai: AiService) {}
+  constructor(private ai: AiService, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(){
+    const saved = sessionStorage.getItem('chatHistory');
+  if (saved) {
+    this.messages = JSON.parse(saved);
+  }
+  }
 
   sendMessage() {
     if (!this.userInput.trim()) return;
@@ -35,7 +44,9 @@ export class AiAssistant {
     });
 
     this.userInput = '';
+    this.saveToSession();
     this.AiResponse(messageText);
+    this.cdr.detectChanges();
   }
 
   AiResponse(messageText: string) {
@@ -44,13 +55,13 @@ export class AiAssistant {
     const historytosend = this.messages.slice(0,-1)
     this.ai.chat(messageText, historytosend).subscribe({
       next: (res: any) => {
-        setTimeout(() => {
-          this.messages.push({
+        this.messages.push({
             role: 'model',
             text: res.message
           });
           this.isTyping = false;
-        }, 1000);
+          this.saveToSession()
+          this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('AI Error:', err);
@@ -59,6 +70,7 @@ export class AiAssistant {
           text: 'Sorry, I encountered an error. Please try again.'
         });
         this.isTyping = false;
+        this.saveToSession()
       }
     });
   }
@@ -66,6 +78,7 @@ export class AiAssistant {
   clearChat() {
     if (confirm('Clear all messages?')) {
       this.messages = [];
+      sessionStorage.removeItem('chatHistory')
     }
   }
 
@@ -75,6 +88,20 @@ export class AiAssistant {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+
+  formatMarkdown(md: string): string | Promise<string> {
+  const dirty = marked.parse(md, { breaks: true });
+  if (typeof dirty === 'string') {
+    return DOMPurify.sanitize(dirty);
+  } else {
+    return dirty.then((d: string) => DOMPurify.sanitize(d));
+  }
+}
+
+saveToSession() {
+  sessionStorage.setItem('chatHistory', JSON.stringify(this.messages));
   }
 }
 
