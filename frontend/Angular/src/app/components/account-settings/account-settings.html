@@ -1,0 +1,168 @@
+<div class="app-container">
+  <app-navbar></app-navbar>
+  
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1 class="page-title">Account Settings</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn">🔔</button>
+        <button class="header-btn">👤</button>
+        <div class="user-menu">
+          <span>{{ userData.username }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div class="message-container" *ngIf="successMessage || errorMessage">
+      <div class="message success" *ngIf="successMessage">
+        ✓ {{ successMessage }}
+      </div>
+      <div class="message error" *ngIf="errorMessage">
+        ✗ {{ errorMessage }}
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="settings-grid">
+      
+      <!-- Profile Information Card -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2>Profile Information</h2>
+          <button class="edit-btn" (click)="toggleEditProfile()" *ngIf="!isEditingProfile">
+            ✏️ Edit
+          </button>
+        </div>
+
+        <!-- View Mode -->
+        <div class="card-content" *ngIf="!isEditingProfile">
+          <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ userData.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ userData.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">First Name</span>
+            <span class="info-value">{{ userData.first_name || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Last Name</span>
+            <span class="info-value">{{ userData.last_name || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone</span>
+            <span class="info-value">{{ userData.phone || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Member Since</span>
+            <span class="info-value">{{ formatDate(userData.created_at) }}</span>
+          </div>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="card-content" *ngIf="isEditingProfile">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" [(ngModel)]="userData.username" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="userData.email" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="userData.first_name" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="userData.last_name" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="userData.phone" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea [(ngModel)]="userData.bio" class="form-textarea" rows="3"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-cancel" (click)="toggleEditProfile()">Cancel</button>
+            <button class="btn-save" (click)="updateProfile()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Card -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2>Password & Security</h2>
+          <button class="edit-btn" (click)="toggleChangePassword()" *ngIf="!isChangingPassword">
+            🔒 Change
+          </button>
+        </div>
+
+        <!-- View Mode -->
+        <div class="card-content" *ngIf="!isChangingPassword">
+          <div class="info-row">
+            <span class="info-label">Password</span>
+            <span class="info-value">••••••••</span>
+          </div>
+          <p class="security-note">
+            Keep your account secure by using a strong password and updating it regularly.
+          </p>
+        </div>
+
+        <!-- Change Password Form -->
+        <div class="card-content" *ngIf="isChangingPassword">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" [(ngModel)]="passwordData.currentPassword" 
+                   class="form-input" placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" [(ngModel)]="passwordData.newPassword" 
+                   class="form-input" placeholder="Enter new password (min 6 characters)">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" 
+                   class="form-input" placeholder="Confirm new password">
+          </div>
+          <div class="form-actions">
+            <button class="btn-cancel" (click)="toggleChangePassword()">Cancel</button>
+            <button class="btn-save" (click)="changePassword()">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Actions Card -->
+      <div class="settings-card danger-card">
+        <div class="card-header">
+          <h2>Danger Zone</h2>
+        </div>
+        <div class="card-content">
+          <p class="danger-text">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          <button class="btn-danger" (click)="deleteAccount()">
+            🗑️ Delete Account
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

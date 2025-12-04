@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Navbar } from '../../navbar/navbar';
+import { Navbar } from '../navbar/navbar';
 import { CommonModule } from '@angular/common';
-import { AiService } from '../../../services/Ai/ai-service';
+import { AiService } from '../../services/Ai/ai-service';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
