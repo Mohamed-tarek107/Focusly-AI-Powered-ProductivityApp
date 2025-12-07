@@ -1,1 +1,88 @@
-<p>help-desk works!</p>
+<div class="app-container">
+  <app-navbar></app-navbar>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1 class="page-title">Feedback</h1>
+      </div>
+      <div class="header-right">
+        <div class="user-menu">
+          <span>{{ currentUser }}</span>
+          <span class="dropdown">▼</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="feedback-section">
+      <div class="feedback-card">
+        <div class="feedback-header">
+          <h2>We'd love to hear from you!</h2>
+          <p>Your feedback helps me improve more</p>
+        </div>
+
+        <div class="rating-section">
+          <label class="rating-label">How would you rate your experience?</label>
+          <div class="stars-container">
+            <span 
+            class="star" 
+            [class.filled]="rating >= 1"
+              (click)="setRating(1)"
+            >
+            ⭐
+            </span>
+            <span 
+            class="star" 
+            [class.filled]="rating >= 2"
+            (click)="setRating(2)"
+            >
+            ⭐
+            </span>
+            <span 
+              class="star" 
+              [class.filled]="rating >= 3"
+              (click)="setRating(3)"
+            >
+              ⭐
+            </span>
+            <span 
+              class="star" 
+              [class.filled]="rating >= 4"
+              (click)="setRating(4)"
+            >
+              ⭐
+            </span>
+            <span 
+              class="star" 
+              [class.filled]="rating >= 5"
+              (click)="setRating(5)"
+            >
+              ⭐
+            </span>
+          </div>
+          <div class="rating-text" *ngIf="ratingText" [ngClass]="ratingClass">
+            {{ ratingText }}
+          </div>
+        </div>
+
+        <div class="feedback-input-section">
+          <label for="feedback" class="feedback-label">Share your thoughts</label>
+          <textarea 
+            id="feedback" 
+            class="feedback-textarea"
+            [(ngModel)]="feedback"
+            name="feedback"
+            placeholder="Tell me what you think..."
+            rows="6"
+          ></textarea>
+        </div>
+
+        <div class="feedback-actions">
+          <button type="button" class="btn-submit" (click)="submitFeedback()">
+            Submit Feedback
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

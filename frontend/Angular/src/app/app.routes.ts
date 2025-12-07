@@ -18,5 +18,5 @@ export const routes: Routes = [
     { path: 'Tasks', component: TasksComponent},
     { path: 'AiAssistant', component: AiAssistant},
     { path: 'settings', component: AccountSettings},
-    { path: 'HelpDesk', component: HelpDesk}
+    { path: 'help', component: HelpDesk}
 ];
