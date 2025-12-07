@@ -15,7 +15,7 @@ interface UserData {
   created_at: string;
 }
 
-interface update {
+interface Update {
     username?: string,
     fname?: string,
     lname?: string,
@@ -28,11 +28,11 @@ interface update {
   selector: 'app-account-settings',
   imports: [CommonModule, Navbar, FormsModule],
   templateUrl: './account-settings.html',
-  styleUrl: './account-settings.css'
+  styleUrls: ['./account-settings.css']
 })
 export class AccountSettings implements OnInit {
 
-  constructor(private user: Authservice, private setting: AccountSettingsService) {}
+  constructor(private user: Authservice, private setting: AccountSettingsService, private cdr: ChangeDetectorRef) {}
 
   userData: UserData = {
     username: '',
@@ -93,7 +93,7 @@ export class AccountSettings implements OnInit {
   // Empty placeholders ready for logic
   updateProfile() {
       
-    const updates: Partial<update> = {};
+    const updates: Partial<Update> = {};
 
     if (this.userData.username !== this.originalData.username) updates.username = this.userData.username;
     if (this.userData.email !== this.originalData.email) updates.email = this.userData.email;
@@ -117,14 +117,18 @@ export class AccountSettings implements OnInit {
           this.isLoading = false;
           this.successMessage = 'Profile updated successfully!';
           setTimeout(() => this.clearMessages(), 3000);
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.isLoading = false;
           this.errorMessage = 'Failed to update profile';
           console.error(err);
+          this.cdr.detectChanges();
         }
     });
   }
+  
+  
   changePassword(currentPass: string, NewPass: string, confirmPass:string) {
       
     
@@ -156,14 +160,50 @@ export class AccountSettings implements OnInit {
       this.errorMessage = 'Passwords do not match';
       return;
     }
-
     this.isLoading = true;
 
 
-    this
+    this.setting.changePass(currentPass, NewPass, confirmPass).subscribe({
+      next:() => {
+        this.successMessage = 'Password changed successfully!';
+        this.isChangingPassword = false;
+        this.passwordData = { currentPass: '', NewPass: '', confirmPass: ''}
+        this.isLoading = false;
+        setTimeout(() => this.clearMessages(), 3000);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error(error);
+        this.errorMessage = 'Failed to change password';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
-  
-  deleteAccount() {}
+
+  deleteAccount() {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+    const confirmText = prompt('Type "DELETE" to confirm account deletion:');
+    if (confirmText !== 'DELETE') return;
+
+    this.isLoading = true;
+
+    this.setting.deleteAccount().subscribe({
+      next: () => {
+        alert('Account deleted successfully');
+        this.isLoading = false;
+        this.user.logout()
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Failed to delete account';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    })
+}
 
 
 
