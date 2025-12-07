@@ -4,12 +4,12 @@ const bcrypt = require("bcryptjs");
 const editInfo = async (req,res) => {
     const  id  = req.user.user_id
 
-    const { fullname, email, fname, lname, phone_number } = req.body
+    const { username, email, fname, lname, phone_number } = req.body
 
     try {
         const updates = {}
 
-        if(fullname) updates.fullname = fullname;
+        if(username) updates.fullname = username;
         if(email) updates.email = email;
         if(fname) updates.fname = fname;
         if(lname) updates.lname = lname;
