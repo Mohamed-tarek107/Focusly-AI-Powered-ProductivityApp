@@ -4,13 +4,13 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class AccountSettings {
+export class AccountSettingsService {
   
   private SettingAPI = 'http://localhost:5000/accountSettings'
 
   constructor(private http: HttpClient){}
 
-  
+
   private getToken(): string | null {
     return localStorage.getItem('accessToken');
 }

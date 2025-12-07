@@ -141,7 +141,12 @@ const currentUser = async (req, res) => {
         email: user[0].email,
         phone_number: user[0].phone_number,
         type: user[0].type,
-        company: user[0].company
+        company: user[0].company,
+        username: user[0].username,
+        fname: user[0].fname,
+        lname: user[0].lname,
+        bio: user[0].bio,
+        created_at: user[0].created_at
     });
     } catch (error) {
         return res.status(500).json({ message: error.message });

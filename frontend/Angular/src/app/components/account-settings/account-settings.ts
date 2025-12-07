@@ -1,35 +1,42 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
+import { Authservice } from '../../services/AuthService/auth';
+import { AccountSettingsService } from '../../services/AccountSettings/account-settings';
 
 
 interface UserData {
   username: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
+  fname: string;
+  lname: string;
+  phone_number: string;
   bio: string;
   created_at: string;
 }
+
 @Component({
   selector: 'app-account-settings',
   imports: [CommonModule, Navbar, FormsModule],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.css'
 })
-export class AccountSettings {
+export class AccountSettings implements OnInit{
 
-userData: UserData = {
-    username: 'mohamed_tarek',
-    email: 'mohamed@example.com',
-    first_name: 'Mohamed',
-    last_name: 'Tarek',
-    phone: '+20 123 456 7890',
-    bio: 'Productivity enthusiast and software developer',
-    created_at: '2024-01-15'
+  constructor(private user: Authservice){}
+
+  userData: UserData = {
+    username: '',
+    email: '',
+    fname: '',
+    lname: '',
+    phone_number: '',
+    bio: '',
+    created_at: ''
   };
+
+
 
   // Backup of original data
   originalData: UserData = { ...this.userData };
@@ -47,6 +54,21 @@ userData: UserData = {
   isLoading = false;
   successMessage = '';
   errorMessage = '';
+
+
+  ngOnInit() {
+    this.user.current<UserData>().subscribe({
+  next: (data) => {
+    this.userData = data;
+    this.originalData = { ...data };
+  },
+  error: (err) => {
+    this.errorMessage = 'Failed to fetch user data';
+    console.error(err);
+      }
+    });
+  }
+
 
   // Toggle edit mode for profile
   toggleEditProfile() {

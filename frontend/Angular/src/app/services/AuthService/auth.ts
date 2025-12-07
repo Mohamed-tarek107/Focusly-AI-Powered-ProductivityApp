@@ -47,21 +47,21 @@ export class Authservice {
       );
     }
 
-    current(){
-      const accessToken = localStorage.getItem('accessToken')
+    current<T = { fullname: string }>(): Observable<T> {
+  const accessToken = localStorage.getItem('accessToken');
 
-      if (!accessToken) {
-        return new Observable(observer => {
-          observer.error({ message: 'No token found' });
-        });
-      }
-      
-      return this.http.get<{ fullname: string }>(`${this.AuthApi}/current`,{
-        headers:{
-          Authorization: `Bearer ${accessToken}`
-          }
-      })
+  if (!accessToken) {
+    return new Observable(observer => {
+      observer.error({ message: 'No token found' });
+    });
+  }
+
+  return this.http.get<T>(`${this.AuthApi}/current`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
     }
+  });
+}
     
     saveAccessToken(token: string){
       return localStorage.setItem('accessToken', token)
