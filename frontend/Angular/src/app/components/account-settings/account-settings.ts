@@ -61,12 +61,15 @@ export class AccountSettings implements OnInit {
   ngOnInit() {
     this.user.current<UserData>().subscribe({
       next: (data) => {
-        this.userData = data;
-        this.originalData = { ...data };
+       console.log('User data received:', data); // Debug 
+          this.userData = data;
+          this.originalData = { ...data };
+          this.cdr.detectChanges();
       },
       error: (err) => {
-        this.errorMessage = 'Failed to fetch user data';
-        console.error(err);
+          console.error('Error fetching user data:', err); // Debug
+          this.errorMessage = 'Failed to fetch user data';
+          this.cdr.detectChanges();
       }
     });
   }
@@ -130,41 +133,38 @@ export class AccountSettings implements OnInit {
   
   
   changePassword(currentPass: string, NewPass: string, confirmPass:string) {
-      
-    
     if (!currentPass || !NewPass || !confirmPass) {
       this.errorMessage = 'Please fill in all password fields';
       return;
     }
 
-    // Check minimum length
     if (NewPass.length < 8) {
       this.errorMessage = 'Password must be at least 8 characters long';
       return;
     }
 
-    // Check for at least one uppercase letter
     if (!/[A-Z]/.test(NewPass)) {
       this.errorMessage = 'Password must contain at least one uppercase letter';
       return;
     }
 
-    // Check for at least one number
     if (!/[0-9]/.test(NewPass)) {
       this.errorMessage = 'Password must contain at least one number';
       return;
     }
 
-    // Check if new password matches confirmation
     if (NewPass !== confirmPass) {
       this.errorMessage = 'Passwords do not match';
       return;
     }
+    
     this.isLoading = true;
-
+    
+    console.log('Sending password change request...'); // ✅ Debug
 
     this.setting.changePass(currentPass, NewPass, confirmPass).subscribe({
-      next:() => {
+      next: (response) => {
+        console.log('Password change response:', response); // ✅ Debug
         this.successMessage = 'Password changed successfully!';
         this.isChangingPassword = false;
         this.passwordData = { currentPass: '', NewPass: '', confirmPass: ''}
@@ -172,16 +172,16 @@ export class AccountSettings implements OnInit {
         setTimeout(() => this.clearMessages(), 3000);
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error(error);
-        this.errorMessage = 'Failed to change password';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+    error: (error) => {
+      console.error('Password change error:', error); // ✅ Debug
+      this.errorMessage = error?.error?.message || 'Failed to change password';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
-  deleteAccount() {
+deleteAccount() {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       return;
     }
@@ -194,7 +194,7 @@ export class AccountSettings implements OnInit {
       next: () => {
         alert('Account deleted successfully');
         this.isLoading = false;
-        this.user.logout()
+        this.user.logout();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -202,9 +202,8 @@ export class AccountSettings implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       }
-    })
+    });
 }
-
 
 
   clearMessages() {
