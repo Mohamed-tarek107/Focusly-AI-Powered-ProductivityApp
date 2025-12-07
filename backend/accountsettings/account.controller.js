@@ -9,7 +9,7 @@ const editInfo = async (req,res) => {
     try {
         const updates = {}
 
-        if(username) updates.fullname = username;
+        if(username) updates.username = username;
         if(email) updates.email = email;
         if(fname) updates.fname = fname;
         if(lname) updates.lname = lname;
