@@ -27,5 +27,16 @@ export class AccountSettings {
       }
     })
   }
+  changePass(currentPass: string, NewPass: string, ConfirmPass: string){
+      return this.http.patch(`${this.SettingAPI}/changePassword`,
+        {currentPass,NewPass,ConfirmPass}),
+        { withCredentials: true },
+        {
+          headers:{
+              Authorization: `Bearer ${this.token}`
+          } 
+        }
+  }
+
   
 }
