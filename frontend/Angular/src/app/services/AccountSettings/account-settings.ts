@@ -1,6 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+
+export enum Rating {
+    Perfect = 'Perfect',
+    Very_good = 'Very Good',
+    Average = 'Average',
+    Below_average = 'Below Average',
+    Horrible = 'Horrible'
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,5 +58,18 @@ export class AccountSettingsService {
       Authorization: `Bearer ${this.getToken()}`
       }
     });
+  }
+
+
+  takeFeedback(feedback: string, rating: Rating){
+    return this.http.post(`${this.SettingAPI}/feedback`,
+      {feedback, rating},
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${this.getToken()}`
+        }
+      }
+    )
   }
 }
