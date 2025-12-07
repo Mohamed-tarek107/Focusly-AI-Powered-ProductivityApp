@@ -52,3 +52,5 @@ const Validation = [
 router.patch("/editAccount",ensureAuthenticated, Validation, editInfo)
 router.patch("/changePassword",ensureAuthenticated, Validation, changePass)
 router.delete("/deleteAccount",ensureAuthenticated, deleteAccount)
+
+module.exports = router;
