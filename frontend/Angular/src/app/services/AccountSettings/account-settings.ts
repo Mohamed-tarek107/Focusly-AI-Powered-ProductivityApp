@@ -7,11 +7,13 @@ import { Injectable } from '@angular/core';
 export class AccountSettings {
   
   private SettingAPI = 'http://localhost:5000/accountSettings'
-  private token: string | null = null;
 
-  constructor(private http: HttpClient){
-    this.token = localStorage.getItem('accessToken')
-  }
+  constructor(private http: HttpClient){}
+
+  
+  private getToken(): string | null {
+    return localStorage.getItem('accessToken');
+}
 
   editInfo(updates: Partial<{
         username: string,
@@ -23,22 +25,28 @@ export class AccountSettings {
     return this.http.patch(`${this.SettingAPI}/editAccount`, updates,
     {
       headers:{
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.getToken()}`
       }
     })
   }
+  
   changePass(currentPass: string, NewPass: string, ConfirmPass: string){
-      return this.http.patch(`${this.SettingAPI}/changePassword`,
-        {currentPass,NewPass,ConfirmPass}),
-        { withCredentials: true },
-        {
-          headers:{
-              Authorization: `Bearer ${this.token}`
-          } 
-        }
-  }
+  return this.http.patch(`${this.SettingAPI}/changePassword`,
+    { currentPass, NewPass, ConfirmPass },
+    {
+      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`
+      }
+    }
+  );
+}
 
   deleteAccount(){
-    return this.http.delete(`${this.SettingAPI}/deleteAccount`)
+  return this.http.delete(`${this.SettingAPI}/deleteAccount`, {
+    headers:{
+      Authorization: `Bearer ${this.getToken()}`
+      }
+    });
   }
 }
