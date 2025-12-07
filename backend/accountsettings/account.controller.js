@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 const editInfo = async (req,res) => {
     const  id  = req.user.user_id
-
     const { username, email, fname, lname, phone_number } = req.body
 
     try {
@@ -96,4 +95,30 @@ const changePass = async (req,res) => {
     }
 }
 
-module.exports = { changePass, editInfo, deleteAccount }
+
+const takeFeedback = async (req, res) => {
+    const id = req.user.user_id
+    const { feedback, rating } = req.body
+
+    if(!feedback){
+        return res.status(400).json({ message: "Feedback Not provided" });
+    }
+
+    if(!rating){
+        return res.status(400).json({ message: "rating is required" }); 
+    }
+    try {
+        const [result] = await db.execute("INSERT INTO feedbacks (user_id, feedback, rating) VALUES (?, ?, ?)", [id, feedback, rating])
+
+        if(result.affectedRows === 0){
+            return res.status(400).json({ message: "Failed to insert feedback" });
+        }
+
+        return res.status(200).json({ message: "Feedback successfully sent" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+}
+
+module.exports = { changePass, editInfo, deleteAccount, takeFeedback}

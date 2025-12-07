@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
 const { ensureAuthenticated } = require("../Auth/auth.controller");
-const { changePass, editInfo, deleteAccount } = require("./account.controller")
+const { changePass, editInfo, deleteAccount, takeFeedback } = require("./account.controller")
 
 
 const Validation = [
@@ -52,5 +52,6 @@ const Validation = [
 router.patch("/editAccount",ensureAuthenticated, Validation, editInfo)
 router.patch("/changePassword",ensureAuthenticated, changePass)
 router.delete("/deleteAccount",ensureAuthenticated, deleteAccount)
+router.post("/feedback", ensureAuthenticated, takeFeedback)
 
 module.exports = router;
