@@ -15,6 +15,15 @@ interface UserData {
   created_at: string;
 }
 
+interface update {
+    username?: string,
+    fname?: string,
+    lname?: string,
+    email?: string,
+    phone_number?: string,
+    bio?:string,
+}
+
 @Component({
   selector: 'app-account-settings',
   imports: [CommonModule, Navbar, FormsModule],
@@ -23,7 +32,7 @@ interface UserData {
 })
 export class AccountSettings implements OnInit {
 
-  constructor(private user: Authservice, private setting: AccountSettingsService, private cdr: ChangeDetectorRef) {}
+  constructor(private user: Authservice, private setting: AccountSettingsService) {}
 
   userData: UserData = {
     username: '',
@@ -38,9 +47,9 @@ export class AccountSettings implements OnInit {
   originalData: UserData = { ...this.userData };
 
   passwordData = {
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPass: '',
+    NewPass: '',
+    confirmPass: ''
   };
 
   isEditingProfile = false;
@@ -75,15 +84,85 @@ export class AccountSettings implements OnInit {
     this.isChangingPassword = !this.isChangingPassword;
     this.clearMessages();
     this.passwordData = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
+      currentPass: '',
+      NewPass: '',
+      confirmPass: ''
     };
   }
 
   // Empty placeholders ready for logic
-  updateProfile() {}
-  changePassword() {}
+  updateProfile() {
+      
+    const updates: Partial<update> = {};
+
+    if (this.userData.username !== this.originalData.username) updates.username = this.userData.username;
+    if (this.userData.email !== this.originalData.email) updates.email = this.userData.email;
+    if (this.userData.fname !== this.originalData.fname) updates.fname = this.userData.fname;
+    if (this.userData.lname !== this.originalData.lname) updates.lname = this.userData.lname;
+    if (this.userData.phone_number !== this.originalData.phone_number) updates.phone_number = this.userData.phone_number;
+    if (this.userData.bio !== this.originalData.bio) updates.bio = this.userData.bio;
+
+    if (Object.keys(updates).length === 0) {
+      this.errorMessage = 'No changes to save';
+      return;
+    }
+
+    this.isLoading = true;
+      
+    this.setting.editInfo(updates).subscribe({
+        next: (data: any) => {
+          this.originalData = { ...data }; // update the backup
+          this.userData = {...data}
+          this.isEditingProfile = false;
+          this.isLoading = false;
+          this.successMessage = 'Profile updated successfully!';
+          setTimeout(() => this.clearMessages(), 3000);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = 'Failed to update profile';
+          console.error(err);
+        }
+    });
+  }
+  changePassword(currentPass: string, NewPass: string, confirmPass:string) {
+      
+    
+    if (!currentPass || !NewPass || !confirmPass) {
+      this.errorMessage = 'Please fill in all password fields';
+      return;
+    }
+
+    // Check minimum length
+    if (NewPass.length < 8) {
+      this.errorMessage = 'Password must be at least 8 characters long';
+      return;
+    }
+
+    // Check for at least one uppercase letter
+    if (!/[A-Z]/.test(NewPass)) {
+      this.errorMessage = 'Password must contain at least one uppercase letter';
+      return;
+    }
+
+    // Check for at least one number
+    if (!/[0-9]/.test(NewPass)) {
+      this.errorMessage = 'Password must contain at least one number';
+      return;
+    }
+
+    // Check if new password matches confirmation
+    if (NewPass !== confirmPass) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
+
+    this.isLoading = true;
+
+
+    this
+  }
+  
   deleteAccount() {}
 
 

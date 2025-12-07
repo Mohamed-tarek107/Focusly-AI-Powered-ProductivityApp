@@ -45,7 +45,7 @@
         <div class="card-content" *ngIf="!isEditingProfile">
           <div class="info-row">
             <span class="info-label">Username</span>
-            <span class="info-value">{{ userData.username }}</span>
+            <span class="info-value">{{ userData.username || 'Not set'}}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Email</span>
@@ -53,11 +53,11 @@
           </div>
           <div class="info-row">
             <span class="info-label">First Name</span>
-            <span class="info-value">{{ userData.fname || 'Not set' }}</span>
+            <span class="info-value">{{ userData.fname }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Last Name</span>
-            <span class="info-value">{{ userData.lname || 'Not set' }}</span>
+            <span class="info-value">{{ userData.lname }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Phone</span>
@@ -88,7 +88,7 @@
             <input type="text" [(ngModel)]="userData.lname" class="form-input">
           </div>
           <div class="form-group">
-            <label>Phone</label>
+            <label>Phone Number</label>
             <input type="tel" [(ngModel)]="userData.phone_number" class="form-input">
           </div>
           <div class="form-group">
@@ -124,19 +124,22 @@
         <div class="card-content" *ngIf="isChangingPassword">
           <div class="form-group">
             <label>Current Password</label>
-            <input type="password" [(ngModel)]="passwordData.currentPassword" class="form-input" placeholder="Enter current password">
+            <input type="password" [(ngModel)]="passwordData.currentPass" class="form-input" placeholder="Enter current password">
           </div>
           <div class="form-group">
             <label>New Password</label>
-            <input type="password" [(ngModel)]="passwordData.newPassword" class="form-input" placeholder="Enter new password (min 6 characters)">
+            <input type="password" [(ngModel)]="passwordData.NewPass" class="form-input" placeholder="Enter new password (min 6 characters)">
           </div>
           <div class="form-group">
             <label>Confirm New Password</label>
-            <input type="password" [(ngModel)]="passwordData.confirmPassword" class="form-input" placeholder="Confirm new password">
+            <input type="password" [(ngModel)]="passwordData.confirmPass" class="form-input" placeholder="Confirm new password">
           </div>
           <div class="form-actions">
             <button class="btn-cancel" (click)="toggleChangePassword()">Cancel</button>
-            <button class="btn-save" (click)="changePassword()">Update Password</button>
+            <button class="btn-save" 
+        (click)="changePassword(passwordData.currentPass, passwordData.NewPass, passwordData.confirmPass)">
+              Update Password
+            </button>
           </div>
         </div>
       </div>
