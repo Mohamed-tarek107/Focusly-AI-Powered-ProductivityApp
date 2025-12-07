@@ -38,5 +38,7 @@ export class AccountSettings {
         }
   }
 
-  
+  deleteAccount(){
+    return this.http.delete(`${this.SettingAPI}/deleteAccount`)
+  }
 }
