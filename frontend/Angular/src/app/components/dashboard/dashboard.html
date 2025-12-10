@@ -8,8 +8,9 @@
           <h1 class="page-title">Focusly</h1>
         </div>
         <div class="header-right">
-          <button class="header-btn">🔔</button>
-          <button class="header-btn">👤</button>
+          <button class="header-btn" routerLink="/settings" 
+              [routerLink]="['/settings']"
+            routerLinkActive="active">👤</button>
           <div class="user-menu">
             <span>{{ currentUser }}</span>
             <span class="dropdown">▼</span>
@@ -36,13 +37,13 @@
       <div class="upcoming-section">
         <h2>Upcoming Work</h2>
         <div class="tasks-grid">
-          <div class="task-card" *ngFor="let task of upcomingTasks">
+          <div class="task-card" *ngFor="let task of tasks">
             <div class="task-header">
               <span class="task-time">⏱ {{ task.timeLeft }}</span>
               <button class="menu-btn">...</button>
             </div>
             <h3>{{ task.title }}</h3>
-            <p class="task-desc">{{ task.description }}</p>
+            <p class="task-desc">{{ task.task_description }}</p>
             <div class="task-priority">
               <span [class]="'priority priority-' + task.priority.toLowerCase()">
                 {{ task.priority }}
@@ -52,7 +53,7 @@
               </span>
             </div>
             <div class="task-footer">
-              <span class="task-date">📅 {{ task.date }}</span>
+              <span class="task-date">📅 {{ task.due_date }}</span>
               <span class="task-time-detail">🕐 {{ task.time }}</span>
             </div>
           </div>
@@ -127,9 +128,9 @@
           <button class="edit-btn">✏</button>
         </div>
         <div class="task-list">
-          <label class="checkbox-item" *ngFor="let item of taskList">
-            <input type="checkbox" [checked]="item.completed">
-            <span [class.completed]="item.completed">{{ item.name }}</span>
+          <label class="checkbox-item" *ngFor="let item of Todos">
+            <input type="checkbox" [checked]="item.is_done">
+            <span [class.completed]="item.is_done">{{ item.name }}</span>
           </label>
         </div>
         <button class="schedule-btn">Schedule Task</button>
