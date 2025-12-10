@@ -2,8 +2,9 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Navbar } from "../navbar/navbar";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Rating } from '../../services/AccountSettings/account-settings';
+import { AccountSettingsService } from '../../services/AccountSettings/account-settings';
 import { Authservice } from '../../services/AuthService/auth';
+import { Rating } from '../../services/AccountSettings/account-settings';
 
 @Component({
   selector: 'app-help-desk',
@@ -19,7 +20,7 @@ export class HelpDesk implements OnInit{
   ratingClass: string = '';
   errorMessage: string = ''
 
-  constructor(private user: Authservice, private cdr: ChangeDetectorRef){}
+  constructor(private user: Authservice, private cdr: ChangeDetectorRef, private setting: AccountSettingsService){}
 
   
   ngOnInit() {
@@ -54,6 +55,29 @@ export class HelpDesk implements OnInit{
   }
 
   submitFeedback(): void {
-    // Call your service here: this.yourService.takeFeedback(this.feedback, this.ratingText as Rating)
+    if(this.rating == 0){
+      alert('Please select a rating before submitting!');
+      return;
+    }
+
+    this.setting.takeFeedback(this.feedback, this.rating as unknown as Rating).subscribe({
+      next: (res) => {
+        console.log('Feedback submitted successfully:', res)
+        alert('Thank you for your feedback!');
+
+
+         // Reset form
+        this.rating = 0;
+        this.feedback = '';
+        this.ratingText = '';
+        this.ratingClass = '';
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error submitting feedback:', error);
+        alert('Failed to submit feedback. Please try again.');
+        this.cdr.detectChanges();
+      }
+    })
   }
 }
