@@ -1,195 +1,160 @@
 <div class="app-container">
-    <app-navbar></app-navbar>
-    
-    <div class="main-content">
-      <!-- Header -->
-      <div class="header">
-        <div class="header-left">
-          <h1 class="page-title">Focusly</h1>
+  <app-navbar></app-navbar>
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left"><h1 class="page-title">Focusly</h1></div>
+      <div class="header-right">
+        <button class="header-btn calendar-toggle" (click)="toggleCalendar()">📅</button>
+        <button
+          class="header-btn"
+          routerLink="/settings"
+          [routerLink]="['/settings']"
+          routerLinkActive="active"
+        >
+          👤
+        </button>
+        <div class="user-menu">
+          <span>{{ currentUser }}</span> <span class="dropdown">▼</span>
         </div>
-        <div class="header-right">
-          <button class="header-btn calendar-toggle" (click)="toggleCalendar()">
-            📅
-          </button>
-          <button class="header-btn" routerLink="/settings" 
-              [routerLink]="['/settings']"
-            routerLinkActive="active">👤</button>
-          <div class="user-menu">
-            <span>{{ currentUser }}</span>
-            <span class="dropdown">▼</span>
+      </div>
+    </div>
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+      </div>
+      <span class="progress-text">{{ progressPercentage }}% complete</span>
+    </div>
+    <!-- Tabs -->
+    <div class="tabs"><button class="tab active">Main</button></div>
+    <!-- Upcoming Work -->
+    <div class="upcoming-section">
+      <h2>Upcoming Work</h2>
+      <div class="tasks-grid" *ngIf="tasks.length > 0">
+        <div class="task-card" *ngFor="let task of tasks">
+          <div class="task-header">
+            <span class="task-time">⏱ {{ task.timeLeft }}</span>
+            <button class="menu-btn">...</button>
+          </div>
+          <h3>{{ task.title }}</h3>
+          <p class="task-desc">{{ task.task_description }}</p>
+          <div class="task-priority">
+            <span [class]="'priority priority-' + task.priority?.toLowerCase()">
+              {{ task.priority }}
+            </span>
+            <span class="priority priority-medium" *ngIf="task.secondaryTag">
+              {{ task.secondaryTag }}
+            </span>
+          </div>
+          <div class="task-footer">
+            <div class="task-dates">
+              <span class="task-date">📅 {{ task.due_date }}</span>
+              <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
+            </div>
+            <button class="done-btn" (click)="markTaskDone(task.task_id)">✓ Done</button>
           </div>
         </div>
       </div>
-
-      <!-- Progress -->
-      <div class="progress-section">
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="progressPercentage"></div>
-        </div>
-        <span class="progress-text">{{ progressPercentage }}% complete</span>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab active">Main</button>
-      </div>
-
-      <!-- Upcoming Work -->
-      <div class="upcoming-section">
-        <h2>Upcoming Work</h2>
-        <div class="tasks-grid" *ngIf="tasks.length > 0">
-          <div class="task-card" *ngFor="let task of tasks">
-            <div class="task-header">
-              <span class="task-time">⏱ {{ task.timeLeft }}</span>
-              <button class="menu-btn">...</button>
-            </div>
-            <h3>{{ task.title }}</h3>
-            <p class="task-desc">{{ task.task_description }}</p>
-            <div class="task-priority">
-              <span [class]="'priority priority-' + task.priority?.toLowerCase()">
-                {{ task.priority }}
-              </span>
-              <span class="priority priority-medium" *ngIf="task.secondaryTag">
-                {{ task.secondaryTag }}
-              </span>
-            </div>
-            <div class="task-footer">
-              <div class="task-dates">
-                <span class="task-date">📅 {{ task.due_date }}</span>
-                <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
-              </div>
-              <button class="done-btn" (click)="markTaskDone(task.task_id)">
-                ✓ Done
-              </button>
+      <div class="no-tasks" *ngIf="tasks.length === 0"><p>No upcoming tasks</p></div>
+    </div>
+    <!-- Done Tasks Section -->
+    <div class="done-section">
+      <h4>Done Tasks</h4>
+      <div class="tasks-grid" *ngIf="doneTasks.length > 0">
+        <div class="task-card done-card" *ngFor="let task of doneTasks">
+          <div class="task-header">
+            <span class="task-time completed-badge">✓ Completed</span>
+            <button class="menu-btn">...</button>
+          </div>
+          <h3>{{ task.title }}</h3>
+          <p class="task-desc">{{ task.task_description }}</p>
+          <div class="task-priority">
+            <span [class]="'priority priority-' + task.priority?.toLowerCase()">
+              {{ task.priority }}
+            </span>
+            <span class="priority priority-medium" *ngIf="task.secondaryTag">
+              {{ task.secondaryTag }}
+            </span>
+          </div>
+          <div class="task-footer">
+            <div class="task-dates">
+              <span class="task-date">📅 {{ task.due_date }}</span>
+              <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
             </div>
           </div>
-        </div>
-        <div class="no-tasks" *ngIf="tasks.length === 0">
-          <p>No upcoming tasks</p>
         </div>
       </div>
-
-      <!-- Done Tasks Section -->
-      <div class="done-section">
-        <h4>Done Tasks</h4>
-        <div class="tasks-grid" *ngIf="doneTasks.length > 0">
-          <div class="task-card done-card" *ngFor="let task of doneTasks">
-            <div class="task-header">
-              <span class="task-time completed-badge">✓ Completed</span>
-              <button class="menu-btn">...</button>
-            </div>
-            <h3>{{ task.title }}</h3>
-            <p class="task-desc">{{ task.task_description }}</p>
-            <div class="task-priority">
-              <span [class]="'priority priority-' + task.priority?.toLowerCase()">
-                {{ task.priority }}
-              </span>
-              <span class="priority priority-medium" *ngIf="task.secondaryTag">
-                {{ task.secondaryTag }}
-              </span>
-            </div>
-            <div class="task-footer">
-              <div class="task-dates">
-                <span class="task-date">📅 {{ task.due_date }}</span>
-                <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="no-tasks" *ngIf="doneTasks.length === 0">
-          <p>No completed tasks yet</p>
-        </div>
+      <div class="no-tasks" *ngIf="doneTasks.length === 0"><p>No completed tasks yet</p></div>
+    </div>
+    <!-- Performance Section -->
+    <div class="performance-section">
+      <div class="performance-header">
+        <h2>Performance</h2>
+        <span class="period">Last Week</span>
       </div>
-
-      <!-- Performance Section -->
-      <div class="performance-section">
-        <div class="performance-header">
-          <h2>Performance</h2>
-          <span class="period">Last Week</span>
+      <div class="performance-grid">
+        <!-- Chart 1 - Productivity -->
+        <div class="chart-card">
+          <div class="chart-title">Weekly Tasks Completed</div>
+          <div class="chart-container"><canvas #productivityChart></canvas></div>
         </div>
-
-        <div class="performance-grid">
-          <!-- Chart 1 - Productivity -->
-          <div class="chart-card">
-            <div class="chart-title">Productivity</div>
-            <div class="chart-bars">
-              <div class="bar" [style.height.%]="60"></div>
-              <div class="bar" [style.height.%]="75"></div>
-              <div class="bar" [style.height.%]="85"></div>
-              <div class="bar" [style.height.%]="65"></div>
-              <div class="bar" [style.height.%]="70"></div>
-              <div class="bar" [style.height.%]="80"></div>
-              <div class="bar" [style.height.%]="55"></div>
-            </div>
-            <div class="chart-label">97% Productivity</div>
-          </div>
-
-          <!-- Chart 2 - Task Completion Rate -->
-          <div class="chart-card">
-            <div class="chart-title">Task Completion Rate</div>
-            <div class="completion-circle">
-              <svg viewBox="0 0 120 120" class="circular-chart">
-                <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
-                <circle class="circle-progress" cx="60" cy="60" r="50" 
-                        [style.stroke-dasharray]="progressPercentage + ', 100'"></circle>
-              </svg>
-              <div class="completion-percentage">{{ progressPercentage }}%</div>
-            </div>
-            <div class="chart-label">Tasks Completed</div>
-          </div>
-
-          <!-- Chart 3 - Weekly Activity -->
-          <div class="chart-card full-width">
-            <div class="chart-title">Weekly Activity</div>
-            <div class="activity-stats">
-              <div class="stat-item">
-                <div class="stat-icon">📝 Total Tasks:</div>
-                <div class="stat-content">
-                  <div class="stat-number">{{ tasks.length + doneTasks.length }}</div>
-                  <div class="stat-label"></div>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-icon">✅  Completed: </div>
-                <div class="stat-content">
-                  <div class="stat-number">{{ doneTasks.length }}</div>
-                  <div class="stat-label"></div>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-icon">⏳  In Progress: </div>
-                <div class="stat-content">
-                  <div class="stat-number">{{ tasks.length }}</div>
-                  <div class="stat-label"></div>
-                </div>
-              </div>
-                </div>
+        <!-- Chart 2 - Task Completion Rate -->
+        <div class="chart-card">
+          <div class="chart-title">Task Completion Rate</div>
+          <div class="chart-container"><canvas #completionChart></canvas></div>
+        </div>
+        <!-- Chart 3 - Weekly Activity -->
+        <div class="chart-card full-width">
+          <div class="chart-title">Weekly Activity</div>
+          <div class="activity-stats">
+            <div class="stat-item">
+              <div class="stat-icon">📝 Total Tasks:</div>
+              <div class="stat-content">
+                <div class="stat-number">{{ tasks.length + doneTasks.length }}</div>
+                <div class="stat-label"></div>
               </div>
             </div>
-          </div>
-        </div>
-
-
-    <!-- Right Sidebar -->
-    <div class="right-sidebar" [class.open]="isCalendarOpen">
-      <button class="sidebar-close" (click)="toggleCalendar()">✕</button>
-      
-      <div class="calendar-section">
-        <div class="calendar-header">
-          <span class="month">Monthly</span>
-          <span class="period-toggle">Daily</span>
-        </div>
-        <div class="calendar">
-          <h3>{{ currentMonth }}</h3>
-          <div class="calendar-grid">
-            <div class="calendar-day-header" *ngFor="let day of dayHeaders">{{ day }}</div>
-            <div class="calendar-day" *ngFor="let date of calendarDates" 
-                [class.today]="date === 23"
-                [class.other-month]="date === 0">
-              {{ date === 0 ? '' : date }}
+            <div class="stat-item">
+              <div class="stat-icon">✅ Completed:</div>
+              <div class="stat-content">
+                <div class="stat-number">{{ doneTasks.length }}</div>
+                <div class="stat-label"></div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">⏳ In Progress:</div>
+              <div class="stat-content">
+                <div class="stat-number">{{ tasks.length }}</div>
+                <div class="stat-label"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <!-- Right Sidebar -->
+  <div class="right-sidebar" [class.open]="isCalendarOpen">
+    <button class="sidebar-close" (click)="toggleCalendar()">✕</button>
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <span class="month">Monthly</span> <span class="period-toggle">Daily</span>
+      </div>
+      <div class="calendar">
+        <h3>{{ currentMonth }}</h3>
+        <div class="calendar-grid">
+          <div class="calendar-day-header" *ngFor="let day of dayHeaders">{{ day }}</div>
+          <div
+            class="calendar-day"
+            *ngFor="let date of calendarDates"
+            [class.today]="date === 23"
+            [class.other-month]="date === 0"
+          >
+            {{ date === 0 ? '' : date }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
