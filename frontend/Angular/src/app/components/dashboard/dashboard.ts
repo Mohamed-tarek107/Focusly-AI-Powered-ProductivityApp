@@ -39,6 +39,7 @@ export class Dashboard implements OnInit{
   currentMonth = '';
   dayHeaders = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   calendarDates = [0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+  isCalendarOpen = false;
 
   tasks = [
     {
@@ -65,7 +66,9 @@ export class Dashboard implements OnInit{
         this.currentUser = data.fullname;
       }
     })
-    this.calcuateProgress()
+    this.loadTasks();
+    this.calcuateProgress();
+    this.setCurrentMonth();
   }
 
 calcuateProgress(){
@@ -81,19 +84,27 @@ calcuateProgress(){
       this.progressPercentage = 0;
     }
   }
+  setCurrentMonth(): void {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentDate = new Date();
+    this.currentMonth = months[currentDate.getMonth()];
+  }
 
+  toggleCalendar(): void {
+    this.isCalendarOpen = !this.isCalendarOpen;
+  }
 
   loadTasks() {
     this.task.getAllTasks().subscribe({
       next: (res: any) => {
         if(res && res.length > 0){
-          this.tasks = res.map((task: any) => ({
+          this.tasks = res.slice(0,2).map((task: any) => ({
             title: task.title,
             task_description: task.task_description,
             priority: task.priority,
             start_date: task.start_date,
             task_status: task.task_status,
-            assigned_to: task.assigned_to,
             due_date: task.due_date,
             is_done: task.is_done == 1,
           }))

@@ -8,6 +8,9 @@
           <h1 class="page-title">Focusly</h1>
         </div>
         <div class="header-right">
+          <button class="header-btn calendar-toggle" (click)="toggleCalendar()">
+            📅
+          </button>
           <button class="header-btn" routerLink="/settings" 
               [routerLink]="['/settings']"
             routerLinkActive="active">👤</button>
@@ -103,7 +106,9 @@
     </div>
 
     <!-- Right Sidebar -->
-    <div class="right-sidebar">
+    <div class="right-sidebar" [class.open]="isCalendarOpen">
+      <button class="sidebar-close" (click)="toggleCalendar()">✕</button>
+      
       <div class="calendar-section">
         <div class="calendar-header">
           <span class="month">Monthly</span>
@@ -120,20 +125,6 @@
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="task-list-section">
-        <div class="task-list-header">
-          <h3>Task</h3>
-          <button class="edit-btn">✏</button>
-        </div>
-        <div class="task-list">
-          <label class="checkbox-item" *ngFor="let item of Todos">
-            <input type="checkbox" [checked]="item.is_done">
-            <span [class.completed]="item.is_done">{{ item.name }}</span>
-          </label>
-        </div>
-        <button class="schedule-btn">Schedule Task</button>
       </div>
     </div>
   </div>
