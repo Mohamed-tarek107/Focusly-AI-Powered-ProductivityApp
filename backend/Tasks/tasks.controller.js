@@ -218,7 +218,7 @@ const markDone = async (req, res) => {
 
 try {
     const [result] = await db.execute(
-        "UPDATE tasks SET is_done = 1 WHERE task_id = ? AND user_id = ?",
+        "UPDATE tasks SET is_done = 1, task_status = 'Done' WHERE task_id = ? AND user_id = ?",
         [id, user_id]
     );
 

@@ -152,8 +152,8 @@ app-navbar {
 }
 
 .task-time {
-  background-color: #1a1a1a;
-  color: white;
+  background-color: beige;
+  color: black;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -398,6 +398,17 @@ app-navbar {
 
 .calendar-day.other-month {
   color: #e0e0e0;
+}
+
+.no-tasks {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.no-tasks p {
+  margin: 0;
 }
 
 /* Responsive adjustments */
