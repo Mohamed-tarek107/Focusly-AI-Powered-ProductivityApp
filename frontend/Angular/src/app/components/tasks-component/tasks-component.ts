@@ -209,5 +209,29 @@ export class TasksComponent implements OnInit {
   this.closeAddModal();
 }
 
+  formatDate(dateString: string): string {
+    if (!dateString) return 'No date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  }
+
+  calculateTimeLeft(dueDate: string): string {
+    if (!dueDate) return 'No deadline';
+    const due = new Date(dueDate);
+    if (isNaN(due.getTime())) return 'Invalid date';
+    const now = new Date();
+    const diff = due.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days < 0) return 'Overdue';
+    if (days === 0) return 'Today';
+    if (days === 1) return '1 day left';
+    return `${days} days left`;
+  }
+
 }
 

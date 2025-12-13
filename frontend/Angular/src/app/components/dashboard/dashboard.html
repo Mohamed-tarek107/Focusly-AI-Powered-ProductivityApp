@@ -34,7 +34,7 @@
       <div class="tasks-grid" *ngIf="tasks.length > 0">
         <div class="task-card" *ngFor="let task of tasks">
           <div class="task-header">
-            <span class="task-time">⏱ {{ task.timeLeft }}</span>
+            <span class="task-time">⏱ {{ calculateTimeLeft(task.due_date) }}</span>
             <button class="menu-btn">...</button>
           </div>
           <h3>{{ task.title }}</h3>
@@ -43,14 +43,10 @@
             <span [class]="'priority priority-' + task.priority?.toLowerCase()">
               {{ task.priority }}
             </span>
-            <span class="priority priority-medium" *ngIf="task.secondaryTag">
-              {{ task.secondaryTag }}
-            </span>
           </div>
           <div class="task-footer">
             <div class="task-dates">
-              <span class="task-date">📅 {{ task.due_date }}</span>
-              <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
+              <span class="task-date">📅 {{ formatDate(task.due_date) }}</span>
             </div>
             <button class="done-btn" (click)="markTaskDone(task.task_id)">✓ Done</button>
           </div>
@@ -73,14 +69,10 @@
             <span [class]="'priority priority-' + task.priority?.toLowerCase()">
               {{ task.priority }}
             </span>
-            <span class="priority priority-medium" *ngIf="task.secondaryTag">
-              {{ task.secondaryTag }}
-            </span>
           </div>
           <div class="task-footer">
             <div class="task-dates">
-              <span class="task-date">📅 {{ task.due_date }}</span>
-              <span class="task-time-detail" *ngIf="task.time">🕐 {{ task.time }}</span>
+              <span class="task-date">📅 {{ formatDate(task.due_date) }}</span>
             </div>
           </div>
         </div>
@@ -111,21 +103,21 @@
             <div class="stat-item">
               <div class="stat-icon">📝 Total Tasks:</div>
               <div class="stat-content">
-                <div class="stat-number">{{ tasks.length + doneTasks.length }}</div>
+                <div class="stat-number">{{ allTasks.length }}</div>
                 <div class="stat-label"></div>
               </div>
             </div>
             <div class="stat-item">
               <div class="stat-icon">✅ Completed:</div>
               <div class="stat-content">
-                <div class="stat-number">{{ doneTasks.length }}</div>
+                <div class="stat-number">{{ allDoneTasks.length }}</div>
                 <div class="stat-label"></div>
               </div>
             </div>
             <div class="stat-item">
               <div class="stat-icon">⏳ In Progress:</div>
               <div class="stat-content">
-                <div class="stat-number">{{ tasks.length }}</div>
+                <div class="stat-number">{{ inProgressTasksCount }}</div>
                 <div class="stat-label"></div>
               </div>
             </div>
@@ -142,16 +134,17 @@
         <span class="month">Monthly</span> <span class="period-toggle">Daily</span>
       </div>
       <div class="calendar">
-        <h3>{{ currentMonth }}</h3>
+        <h3>{{ currentMonth }} {{ currentYear }}</h3>
         <div class="calendar-grid">
           <div class="calendar-day-header" *ngFor="let day of dayHeaders">{{ day }}</div>
           <div
             class="calendar-day"
             *ngFor="let date of calendarDates"
-            [class.today]="date === 23"
-            [class.other-month]="date === 0"
+            [class.today]="date.isToday"
+            [class.other-month]="!date.isCurrentMonth"
           >
-            {{ date === 0 ? '' : date }}
+            {{ date.day }}
+            <span class="deadline-dot" *ngIf="date.hasDeadline && date.isCurrentMonth"></span>
           </div>
         </div>
       </div>

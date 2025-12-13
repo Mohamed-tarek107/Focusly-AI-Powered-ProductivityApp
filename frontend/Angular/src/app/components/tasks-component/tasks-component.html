@@ -38,12 +38,16 @@
 
             <div class="task-details">
               <div class="detail-item">
-                <span class="detail-label">Date:</span>
-                <span>{{ task.start_date }}</span>
+                <span class="detail-label">Start Date:</span>
+                <span>{{ formatDate(task.start_date) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Due Date:</span>
+                <span>{{ formatDate(task.due_date) }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Time Left:</span>
-                <span>{{ task.due_date }}</span>
+                <span>{{ calculateTimeLeft(task.due_date) }}</span>
               </div>
             </div>
 
