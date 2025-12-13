@@ -269,7 +269,8 @@ const changePassAfterReset = async (req,res) => {
 
     const hashedNew = await bcrypt.hash(NewPass, 10)
     await db.execute("UPDATE users SET password_hashed = ? WHERE reset_token = ?",[hashedNew, hashedToken])
-
+    await db.execute("UPDATE users SET reset_expires = NULL, reset_token = NULL WHERE reset_token = ?", [hashedToken])
+    
     return res.status(200).json({ message: "Password Changed Successfully", })
     } catch (error) {
         console.error(error);
