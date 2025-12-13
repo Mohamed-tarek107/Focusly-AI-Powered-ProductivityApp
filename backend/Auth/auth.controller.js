@@ -261,15 +261,18 @@ const changePassAfterReset = async (req,res) => {
         "SELECT reset_token_expires FROM users WHERE reset_token = ?",
             [hashedToken]
     );
-
+    if (rows.length === 0) return res.status(400).json({ message: "Invalid token" });
+    
     if(rows[0].reset_token_expires < Date.now()){
         return res.status(400).json({ message: "Reset Token expired" });
     }
 
 
     const hashedNew = await bcrypt.hash(NewPass, 10)
-    await db.execute("UPDATE users SET password_hashed = ? WHERE reset_token = ?",[hashedNew, hashedToken])
-    await db.execute("UPDATE users SET reset_expires = NULL, reset_token = NULL WHERE reset_token = ?", [hashedToken])
+    await db.execute(
+        "UPDATE users SET password_hashed = ?, reset_expires = NULL, reset_token = NULL WHERE reset_token = ?",
+        [hashedNew, hashedToken]
+    );
     
     return res.status(200).json({ message: "Password Changed Successfully", })
     } catch (error) {
