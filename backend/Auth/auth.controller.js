@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const sendMail = require("./mailer.js")
+const sendMail = require("./mailer.js");
 
 const register = async (req, res) => {
     
@@ -185,11 +185,7 @@ const CodeVerification = async (req, res) => {
 
     sendMail(email,code)
 
-    return res.status(200).json({
-        message: "Verification code sent to email",
-        reset_token,
-        reset_token_expires
-});
+    return res.status(200).json({ message: "Verification code sent to email"});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Server error" });
@@ -211,7 +207,7 @@ const forgetPass = async (req,res) => {
     
     
     const [rows] = await db.execute(
-        "SELECT reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
+        "SELECT id, reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
             [hashedToken]
     );
 
@@ -237,15 +233,49 @@ const forgetPass = async (req,res) => {
         return res.status(400).json({ message: "Reset code expired" });
     }
 
-    await db.execute("UPDATE users SET reset_expires = NULL, reset_code = NULL, reset_token = NULL, reset_token_expires = NULL  WHERE reset_token = ?",
+    await db.execute("UPDATE users SET reset_expires = NULL, reset_code = NULL WHERE reset_token = ?",
         [hashedToken]
     )
 
-    res.status(200).json({ message: "Reset Completed" })
-
+    res.status(200).json({ message: "Reset Completed"})
 }
 
+const changePassAfterReset = async (req,res) => {
+    const { token, NewPass, ConfirmPass } = req.body;
 
+    if(!NewPass || !ConfirmPass){
+        return res.status(400).json({ message: "Provide New pass and its confirmation" });
+    }
+
+    if(NewPass !== ConfirmPass){
+        return res.status(400).json({ message: "new Password dont match the confirmation" });
+    }
+
+    try {
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+    
+    const [rows] = await db.execute(
+        "SELECT reset_token_expires FROM users WHERE reset_token = ?",
+            [hashedToken]
+    );
+
+    if(rows[0].reset_token_expires < Date.now()){
+        return res.status(400).json({ message: "Reset Token expired" });
+    }
+
+
+    const hashedNew = await bcrypt.hash(NewPass, 10)
+    await db.execute("UPDATE users SET password_hashed = ? WHERE reset_token = ?",[hashedNew, hashedToken])
+
+    return res.status(200).json({ message: "Password Changed Successfully", })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+}
 
 
 const refreshRoute = async (req,res) => {
@@ -334,9 +364,9 @@ function generateVerification() {
 function generateResetTokens() {
     return {
         reset_token: crypto.randomBytes(32).toString("hex"),
-        reset_token_expires: Date.now() + 5 * 60 * 1000 
+        reset_token_expires: Date.now() + 15 * 60 * 1000 
     };
 }
 
 
-module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute, forgetPass, CodeVerification };
+module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute, forgetPass, CodeVerification, changePassAfterReset };
