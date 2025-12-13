@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../db.js");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-
+const sendMail = require("./mailer.js")
 
 const register = async (req, res) => {
     
@@ -150,8 +150,9 @@ const currentUser = async (req, res) => {
     }
 };
 
-const forgetPass = async (req, res) => {
-    const { email } = req.body;
+const CodeVerification = async (req, res) => {
+    try {
+        const { email } = req.body;
 
     const [existingUser] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
@@ -161,9 +162,91 @@ const forgetPass = async (req, res) => {
     if(existingUser.length == 0){
         return res.status(400).json({ message: "User not registered" });
     }
+    const { code, expiresAt } = generateVerification();
+
+    const hashedCode = crypto
+        .createHash("sha256")
+        .update(code)
+        .digest("hex");
+    
+    const {reset_token, reset_token_expires} = generateResetTokens()
+
+    const resetToken = crypto
+        .createHash("sha256")
+        .update(reset_token)
+        .digest("hex");
+
+        await db.execute(
+        `UPDATE users 
+        SET reset_code = ?, reset_expires = ?, reset_token = ?, reset_token_expires = ?
+        WHERE email = ?`,
+        [hashedCode, expiresAt, resetToken, reset_token_expires, email ]
+    );
+
+    sendMail(email,code)
+
+    return res.status(200).json({
+        message: "Verification code sent to email",
+        reset_token,
+        reset_token_expires
+});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+const forgetPass = async (req,res) => {
+    const { code, token } = req.body
+
+    if(!code){
+        return res.status(400).json({ message: "Code Not Provided" });
+    }
+    
+    const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
 
     
+    
+    const [rows] = await db.execute(
+        "SELECT reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
+            [hashedToken]
+    );
+
+    if (rows.length === 0) {
+        return res.status(400).json({ message: "Wrong token or code" });
+    }
+
+
+    const hashedCode = crypto
+    .createHash("sha256")
+    .update(code)
+    .digest("hex")
+
+    if(rows[0].reset_token_expires < Date.now()){
+        return res.status(400).json({ message: "Reset Token expired" });
+    }
+
+    if(rows[0].reset_code !== hashedCode){
+        return res.status(400).json({ message: "Wrong Verification Code" });
+    }
+
+    if (rows[0].reset_expires < Date.now()) {
+        return res.status(400).json({ message: "Reset code expired" });
+    }
+
+    await db.execute("UPDATE users SET reset_expires = NULL, reset_code = NULL, reset_token = NULL, reset_token_expires = NULL  WHERE reset_token = ?",
+        [hashedToken]
+    )
+
+    res.status(200).json({ message: "Reset Completed" })
+
 }
+
+
+
 
 const refreshRoute = async (req,res) => {
     const refreshtoken = req.cookies.refreshToken;
@@ -240,4 +323,20 @@ async function ensureAuthenticated(req, res, next) {
     }
 }
 
-module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute };
+// Helpers
+function generateVerification() {
+    return {
+        code: crypto.randomInt(100000, 1000000).toString(),
+        expiresAt: Date.now() + 5 * 60 * 1000 
+    };
+}
+
+function generateResetTokens() {
+    return {
+        reset_token: crypto.randomBytes(32).toString("hex"),
+        reset_token_expires: Date.now() + 5 * 60 * 1000 
+    };
+}
+
+
+module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute, forgetPass, CodeVerification };
