@@ -1,43 +1,130 @@
 <body>
-    <nav class="navbar">
+  <nav class="navbar">
     <span class="logo-icon">◉</span>
     <span class="brand-text">Focusly</span>
-    </nav>
+  </nav>
 
-    <main class="login-page">
+  <main class="login-page">
     <div class="container d-flex justify-content-center" id="main-container">
-        <div class="card p-4 login-card" style="width: 420px">
-        <h2 class="form-title">Welcome back</h2>
+      <div class="card p-4 login-card">
+        
+        <!-- Step 1: Email Entry -->
+        <div *ngIf="currentStep === 'email'" class="step-section">
+          <h2 class="form-title">Forgot Password</h2>
 
-        <form class="login-form" action="#" autocomplete="off" novalidate>
+          <form (ngSubmit)="onEmailSubmit()" class="login-form" autocomplete="off" novalidate>
             <div class="form-group floating">
-            <input
-                id="login_email"
+              <input
+                id="forgot_email"
                 name="email"
                 type="email"
                 required
                 class="form-control"
                 placeholder=" "
-            />
-            <label for="login_email" class="floating-label">Email</label>
+                [(ngModel)]="emailData.email"
+              />
+              <label for="forgot_email" class="floating-label">Email</label>
             </div>
 
             <div class="form-row options-row">
-            <a class="forgot-link" [routerLink]="['/Login']">Remember?</a>
+              <a class="forgot-link" [routerLink]="['/Login']">Remember?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Send Verfication</button>
-        </form>
+            <button type="submit" class="btn btn-primary btn-block">Send Verification</button>
+          </form>
 
-        <div class="text-center mt-3">
+          <div class="text-center mt-3">
             <p>
-            Don't have an account?
-            <a [routerLink]="['/Register']" class="link-inline">Register here</a>
+              Don't have an account?
+              <a [routerLink]="['/Register']" class="link-inline">Register here</a>
             </p>
+          </div>
         </div>
-        
+
+        <!-- Step 2: Code Verification -->
+        <div *ngIf="currentStep === 'code'" class="step-section">
+          <h2 class="form-title">Verify Code</h2>
+
+          <div class="success-message">Verification sent through email</div>
+
+          <form (ngSubmit)="onCodeSubmit()" class="login-form" autocomplete="off" novalidate>
+            <div class="form-group floating">
+              <input
+                id="verification_code"
+                name="code"
+                type="text"
+                required
+                [class.error]="codeError"
+                [class.success]="codeSuccess"
+                class="form-control"
+                placeholder=" "
+                maxlength="6"
+                [(ngModel)]="codeData.code"
+              />
+              <label for="verification_code" class="floating-label">Verification Code</label>
+            </div>
+
+            <div *ngIf="codeMessage" [class.error]="codeError" [class.success]="codeSuccess" class="message-box show">
+              {{ codeMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              {{ codeVerified ? 'Continue' : 'Verify Code' }}
+            </button>
+          </form>
+
+          <div class="text-center mt-3">
+            <p>
+              <a (click)="backToEmail()" class="link-inline" style="cursor: pointer;">Back to email</a>
+            </p>
+          </div>
         </div>
+
+        <!-- Step 3: Reset Password -->
+        <div *ngIf="currentStep === 'reset'" class="step-section">
+          <h2 class="form-title">Reset Password</h2>
+
+          <form (ngSubmit)="onResetSubmit()" class="login-form" autocomplete="off" novalidate>
+            <div class="form-group floating">
+              <input
+                id="new_password"
+                name="newPassword"
+                type="password"
+                required
+                [class.error]="resetError"
+                [class.success]="resetSuccess"
+                class="form-control"
+                placeholder=" "
+                [(ngModel)]="resetData.NewPass"
+              />
+              <label for="new_password" class="floating-label">New Password</label>
+            </div>
+
+            <div class="form-group floating">
+              <input
+                id="confirm_password"
+                name="confirmPassword"
+                type="password"
+                required
+                [class.error]="resetError"
+                [class.success]="resetSuccess"
+                class="form-control"
+                placeholder=" "
+                [(ngModel)]="resetData.ConfirmPass"
+              />
+              <label for="confirm_password" class="floating-label">Confirm Password</label>
+            </div>
+
+            <div *ngIf="resetMessage" [class.error]="resetError" [class.success]="resetSuccess" class="message-box show">
+              {{ resetMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Reset Password</button>
+          </form>
+        </div>
+
+      </div>
     </div>
-        <footer class="component-footer">© 2025 Focusly — Mohamed Tarek</footer>
-    </main>
+    <footer class="component-footer">© 2025 Focusly — Mohamed Tarek</footer>
+  </main>
 </body>
