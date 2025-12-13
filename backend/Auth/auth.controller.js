@@ -69,10 +69,7 @@ const errors = validationResult(req);
 
 
     try {
-    const [existingUser] = await db.execute(
-      "SELECT * FROM users WHERE email = ? OR phone_number = ?",
-        [email || null, phone_number || null]
-    );
+    
     if (existingUser.length === 0) {
         return res.status(400).json({ message: "User not registered" });
     }
@@ -152,6 +149,21 @@ const currentUser = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
+const forgetPass = async (req, res) => {
+    const { email } = req.body;
+
+    const [existingUser] = await db.execute(
+      "SELECT * FROM users WHERE email = ?",
+        [email]
+    );
+
+    if(existingUser.length == 0){
+        return res.status(400).json({ message: "User not registered" });
+    }
+
+    
+}
 
 const refreshRoute = async (req,res) => {
     const refreshtoken = req.cookies.refreshToken;
