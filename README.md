@@ -26,9 +26,11 @@
 - **User Authentication** - Secure registration, login, and password recovery with JWT tokens
 - **Task Management** - Create, update, delete, and organize tasks with priorities and deadlines
 - **AI Assistant** - Powered by Google Gemini AI for productivity guidance and study support
-- **Dashboard Analytics** - Visual productivity charts and completion statistics
+- **Dashboard Analytics** - Real-time visual productivity charts and completion statistics
 - **Calendar Integration** - View tasks and deadlines in an interactive calendar
 - **Account Settings** - Customize your profile and preferences
+- **Help Desk & Feedback** - Submit feedback and rate the application
+- **Email Notifications** - Password reset and account verification via email
 
 ### 🤖 AI Assistant Capabilities
 - Productivity & time management guidance
@@ -38,11 +40,13 @@
 - Lifestyle habits for productivity
 
 ### 📊 Dashboard Features
-- Weekly productivity charts (Chart.js)
-- Task completion statistics
-- Progress tracking
-- Upcoming work overview
-- Calendar view with deadline indicators
+- **Real-time Charts** - Live updating productivity and completion charts using Chart.js
+- Weekly productivity bar charts with automatic data refresh
+- Task completion pie charts with real-time statistics
+- Progress tracking with dynamic percentage calculations
+- Upcoming work overview with priority indicators
+- Interactive calendar view with deadline indicators
+- Weekly activity statistics (Total, Completed, In Progress tasks)
 
 ## 🛠 Tech Stack
 
@@ -130,10 +134,13 @@
 ### Getting Started
 
 1. **Register a new account** or **login** with existing credentials
-2. **Navigate to Dashboard** to see your productivity overview
+2. **Navigate to Dashboard** to see your productivity overview with real-time charts
 3. **Create tasks** in the Tasks section with priorities and deadlines
-4. **Interact with AI Assistant** for productivity tips and study help
-5. **View analytics** on the Dashboard to track your progress
+4. **Watch charts update automatically** as you complete tasks - no page refresh needed!
+5. **Interact with AI Assistant** for productivity tips and study help
+6. **View analytics** on the Dashboard to track your progress
+7. **Use the calendar** to see upcoming deadlines at a glance
+8. **Submit feedback** in the Help Desk section to help improve the app
 
 ### AI Assistant Commands
 
@@ -171,20 +178,58 @@ AI-Powered-ProductivityApp/
 
 ## 🔐 Security Features
 
-- Password hashing with bcryptjs
-- JWT-based authentication
-- Express rate limiting
-- Input validation with express-validator
-- Secure cookie handling
-- CORS configuration
+### Authentication & Authorization
+- **Password Security**
+  - bcryptjs hashing with salt rounds (12)
+  - Password strength requirements (min 8 chars, uppercase, numbers)
+  - Password confirmation validation
+- **JWT Tokens**
+  - Access tokens for API authentication
+  - Refresh tokens stored in httpOnly cookies
+  - Token expiration and refresh mechanism
+  - Secure token generation and validation
+
+### API Protection
+- **Rate Limiting**
+  - Login attempts: 5 requests per 15 minutes
+  - Password reset: Rate-limited to prevent abuse
+  - Email verification: Protected against spam
+- **Input Validation**
+  - express-validator for all user inputs
+  - Email format validation
+  - Phone number format validation
+  - Name validation (letters only, length constraints)
+  - SQL injection prevention through parameterized queries
+
+### Cookie & Session Security
+- HttpOnly cookies (prevents XSS attacks)
+- SameSite: strict (prevents CSRF attacks)
+- Secure cookie flags (configurable for production)
+- Cookie expiration management
+
+### Network Security
+- CORS configuration with specific origin whitelist
+- Credentials support for authenticated requests
+- Allowed methods and headers restriction
+
+### Data Protection
+- MySQL parameterized queries (SQL injection prevention)
+- Environment variables for sensitive data
+- No sensitive data in client-side code
+- Secure password reset flow with email verification
 
 ## 🎨 UI/UX Features
 
-- Modern, responsive design
-- Interactive charts and visualizations
-- Calendar integration
-- Real-time task updates
-- Clean, intuitive navigation
+- **Modern, Responsive Design** - Works seamlessly on desktop and mobile devices
+- **Real-time Chart Updates** - Charts automatically refresh when tasks are created or completed
+- **Interactive Visualizations** - Click and hover interactions on Chart.js graphs
+- **Calendar Integration** - Visual calendar with task deadline indicators
+- **Real-time Task Updates** - Instant UI updates when tasks are modified
+- **Clean, Intuitive Navigation** - Easy-to-use navigation bar and routing
+- **Progress Indicators** - Visual progress bars and completion percentages
+- **User Feedback System** - Rating and feedback collection in Help Desk
+- **Email Integration** - Seamless email notifications for account management
+- **Markdown Support** - Rich text rendering in AI assistant responses (DOMPurify sanitization)
 
 ## 📝 API Endpoints
 
@@ -206,32 +251,17 @@ AI-Powered-ProductivityApp/
 
 ### Account Settings
 - `GET /accountSettings` - Get user settings
-- `PUT /accountSettings` - Update user settings
+- `PATCH /accountSettings/editAccount` - Update user account information
+- `POST /accountSettings/rating` - Submit user feedback and rating
 
-## 🤝 Contributing
+### Authentication 
+- `POST /api/auth/refresh-token` - Refresh access token
+- `POST /api/auth/verify-reset` - Verify password reset token
+- `POST /api/auth/reset-password` - Reset password after verification
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the ISC License.
 
 ## 👤 Author
-
 **Mohamed Tarek**
-
-## 🙏 Acknowledgments
-
-- Google Gemini AI for intelligent assistance
-- Angular team for the amazing framework
-- Chart.js for beautiful data visualizations
-- All open-source contributors
 
 ---
 
