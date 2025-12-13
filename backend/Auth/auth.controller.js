@@ -150,7 +150,7 @@ const currentUser = async (req, res) => {
     }
 };
 
-const CodeVerification = async (req, res) => {
+const emailVerification = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -262,7 +262,7 @@ const changePassAfterReset = async (req,res) => {
             [hashedToken]
     );
     if (rows.length === 0) return res.status(400).json({ message: "Invalid token" });
-    
+
     if(rows[0].reset_token_expires < Date.now()){
         return res.status(400).json({ message: "Reset Token expired" });
     }
@@ -373,4 +373,6 @@ function generateResetTokens() {
 }
 
 
-module.exports = { register, LoginUser, ensureAuthenticated, currentUser, refreshRoute, forgetPass, CodeVerification, changePassAfterReset };
+module.exports = {  register, LoginUser, ensureAuthenticated, currentUser,
+                    refreshRoute, forgetPass, emailVerification, changePassAfterReset
+                };
