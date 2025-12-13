@@ -2,6 +2,23 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+
+interface ForgotPasswordPayload {
+  email: string;
+}
+
+interface CodeVerificationPayload {
+  code: string;
+  token: string;
+}
+
+interface ChangePasswordPayload {
+  token: string;
+  NewPass: string;
+  ConfirmPass: string;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -63,6 +80,20 @@ export class Authservice {
   });
 }
     
+    emailVerification(payload: ForgotPasswordPayload){
+      return this.http.post(`${this.AuthApi}/forgot-password`, payload)
+    }
+
+    codeVerification(payload: CodeVerificationPayload){
+      return this.http.post(`${this.AuthApi}/verify-reset`, payload)
+    }
+
+    ResetPass(payload: ChangePasswordPayload){
+      return this.http.post(`${this.AuthApi}/reset-password`, payload)
+    }
+
+
+
     saveAccessToken(token: string){
       return localStorage.setItem('accessToken', token)
     }

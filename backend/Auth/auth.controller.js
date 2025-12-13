@@ -373,6 +373,12 @@ function generateResetTokens() {
 }
 
 
-module.exports = {  register, LoginUser, ensureAuthenticated, currentUser,
-                    refreshRoute, forgetPass, emailVerification, changePassAfterReset
+module.exports = {  register,
+                    LoginUser,
+                    ensureAuthenticated,
+                    currentUser,
+                    refreshRoute,
+                    forgetPass,
+                    emailVerification, 
+                    changePassAfterReset
                 };
