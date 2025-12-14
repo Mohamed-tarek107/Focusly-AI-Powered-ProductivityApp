@@ -2,21 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
-interface ForgotPasswordPayload {
-  email: string;
-}
-
-interface CodeVerificationPayload {
-  code: string;
-  token: string;
-}
-
-interface ChangePasswordPayload {
-  token: string;
-  NewPass: string;
-  ConfirmPass: string;
-}
+import { Authservice } from '../../../services/AuthService/auth';
 
 @Component({
   selector: 'app-forget-page',
@@ -25,126 +11,108 @@ interface ChangePasswordPayload {
   styleUrl: './forget-page.css'
 })
 export class ForgetPage {
-  // Current step tracking
+
+  // step control
   currentStep: 'email' | 'code' | 'reset' = 'email';
-  
-  // Token storage
+
+  // form values
+  email = '';
+  code = '';
+  newPass = '';
+  confirmPass = '';
+
+  // token (memory only)
   verificationToken: string | null = null;
-  
-  // Form data
-  emailData: ForgotPasswordPayload = { email: '' };
-  codeData: CodeVerificationPayload = { code: '', token: '' };
-  resetData: ChangePasswordPayload = { token: '', NewPass: '', ConfirmPass: '' };
-  
-  // Code step state
-  codeMessage: string = '';
-  codeError: boolean = false;
-  codeSuccess: boolean = false;
-  codeVerified: boolean = false;
-  
-  // Reset step state
-  resetMessage: string = '';
-  resetError: boolean = false;
-  resetSuccess: boolean = false;
 
-  constructor(private router: Router) {}
+  // code step messages
+  codeMessage = '';
+  codeError = false;
+  codeSuccess = false;
 
-  // Step 1: Email Submission
-  async onEmailSubmit() {
-    // TODO: Call your service here
-    // Example:
-    // try {
-    //   const response = await this.authService.emailVerification(this.emailData).toPromise();
-    //   this.verificationToken = response.token;
-    //   this.currentStep = 'code';
-    // } catch (error) {
-    //   console.error('Email verification failed', error);
-    // }
-    
-    // Temporary simulation
-    this.verificationToken = 'temp-token-123';
-    this.currentStep = 'code';
+  // reset step messages
+  resetMessage = '';
+  resetError = false;
+  resetSuccess = false;
+
+  constructor(private auth: Authservice, private router: Router) {}
+
+  // STEP 1: email
+  onEmailSubmit() {
+    this.auth.emailVerification(this.email).subscribe({
+      next: (res: any) => {
+        this.verificationToken = res.resetToken;
+        this.currentStep = 'code';
+        this.clearCodeMessages();
+      },
+      error: (err) => {
+        const message = err.error?.message || 'Failed to send verification code';
+        this.showCodeError(message);
+      }
+    });
   }
 
-  // Step 2: Code Submission
-  async onCodeSubmit() {
-    // If already verified, move to next step
-    if (this.codeVerified) {
-      this.currentStep = 'reset';
-      this.clearCodeMessages();
-      this.codeVerified = false;
+  // STEP 2: code
+  onCodeSubmit() {
+    if (!this.verificationToken) {
+      this.showCodeError('Missing verification token');
       return;
     }
 
-    this.codeData.token = this.verificationToken!;
-    
-    // TODO: Call your service here
-    // Example:
-    // try {
-    //   const response = await this.authService.codeVerification(this.codeData).toPromise();
-    //   this.verificationToken = response.newToken; // Update if needed
-    //   this.showCodeSuccess('Code verified successfully! Click Continue to proceed.');
-    //   this.codeVerified = true;
-    // } catch (error) {
-    //   this.showCodeError('Invalid code. Please try again.');
-    // }
-    
-    // Temporary simulation
-    if (this.codeData.code.length === 6) {
-      this.showCodeSuccess('Code verified successfully! Click Continue to proceed.');
-      this.codeVerified = true;
-    } else {
-      this.showCodeError('Invalid code. Please try again.');
-    }
-  }
-
-  // Step 3: Password Reset Submission
-  async onResetSubmit() {
-    // Clear any previous messages
-    this.resetMessage = '';
-    this.resetError = false;
-    this.resetSuccess = false;
-    
-    // Client-side validation
-    if (this.resetData.NewPass !== this.resetData.ConfirmPass) {
-      this.showResetError('Passwords do not match!');
-      return;
-    }
-    
-    if (this.resetData.NewPass.length < 8) {
-      this.showResetError('Password must be at least 8 characters!');
-      return;
-    }
-    
-    this.resetData.token = this.verificationToken!;
-    
-    // TODO: Call your service here
-    // Example:
-    // try {
-    //   const response = await this.authService.ResetPass(this.resetData).toPromise();
-    //   this.showResetSuccess('Password reset successful! Redirecting...');
-    //   setTimeout(() => this.router.navigate(['/Login']), 2000);
-    // } catch (error) {
-    //   this.showResetError('Failed to reset password. Please try again.');
-    // }
-    
-    // Temporary simulation
-    this.showResetSuccess('Password reset successful! Redirecting...');
-    setTimeout(() => this.router.navigate(['/Login']), 2000);
-  }
-
-  // Helper methods
-  backToEmail() {
-    this.currentStep = 'email';
     this.clearCodeMessages();
-    this.codeVerified = false;
+
+    this.auth.codeVerification(this.code, this.verificationToken).subscribe({
+      next: () => {
+        this.showCodeSuccess('Code verified successfully');
+        setTimeout(() => {
+          this.currentStep = 'reset';
+          this.clearCodeMessages();
+        }, 1000);
+      },
+      error: (err) => {
+        const message = err.error?.message || 'Invalid verification code';
+        this.showCodeError(message);
+      }
+    });
   }
 
+  // STEP 3: reset
+  onResetSubmit() {
+    if (!this.verificationToken) {
+      this.showResetError('Missing verification token');
+      return;
+    }
+
+    if (this.newPass !== this.confirmPass) {
+      this.showResetError('Passwords do not match');
+      return;
+    }
+
+    if (this.newPass.length < 8) {
+      this.showResetError('Password must be at least 8 characters');
+      return;
+    }
+
+    this.clearResetMessages();
+
+    this.auth.resetPass(this.verificationToken, this.newPass, this.confirmPass).subscribe({
+      next: () => {
+        this.showResetSuccess('Password reset successfully! Redirecting...');
+        setTimeout(() => {
+          this.router.navigate(['/Login']);
+        }, 2000);
+      },
+      error: (err) => {
+        const message = err.error?.message || 'Failed to reset password';
+        this.showResetError(message);
+      }
+    });
+  }
+
+  // -------- Code message helpers --------
   showCodeError(message: string) {
     this.codeMessage = message;
     this.codeError = true;
     this.codeSuccess = false;
-    this.codeVerified = false;
   }
 
   showCodeSuccess(message: string) {
@@ -159,6 +127,7 @@ export class ForgetPage {
     this.codeSuccess = false;
   }
 
+  // -------- Reset message helpers --------
   showResetError(message: string) {
     this.resetMessage = message;
     this.resetError = true;
@@ -169,5 +138,19 @@ export class ForgetPage {
     this.resetMessage = message;
     this.resetSuccess = true;
     this.resetError = false;
+  }
+
+  clearResetMessages() {
+    this.resetMessage = '';
+    this.resetError = false;
+    this.resetSuccess = false;
+  }
+
+  // navigation helper
+  backToEmail() {
+    this.currentStep = 'email';
+    this.code = '';
+    this.clearCodeMessages();
+    this.clearResetMessages();
   }
 }

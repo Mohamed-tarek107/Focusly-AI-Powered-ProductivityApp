@@ -21,7 +21,7 @@
                 required
                 class="form-control"
                 placeholder=" "
-                [(ngModel)]="emailData.email"
+                [(ngModel)]="email"
               />
               <label for="forgot_email" class="floating-label">Email</label>
             </div>
@@ -59,7 +59,7 @@
                 class="form-control"
                 placeholder=" "
                 maxlength="6"
-                [(ngModel)]="codeData.code"
+                [(ngModel)]="code"
               />
               <label for="verification_code" class="floating-label">Verification Code</label>
             </div>
@@ -69,7 +69,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">
-              {{ codeVerified ? 'Continue' : 'Verify Code' }}
+              Verify Code
             </button>
           </form>
 
@@ -95,7 +95,7 @@
                 [class.success]="resetSuccess"
                 class="form-control"
                 placeholder=" "
-                [(ngModel)]="resetData.NewPass"
+                [(ngModel)]="newPass"
               />
               <label for="new_password" class="floating-label">New Password</label>
             </div>
@@ -110,7 +110,7 @@
                 [class.success]="resetSuccess"
                 class="form-control"
                 placeholder=" "
-                [(ngModel)]="resetData.ConfirmPass"
+                [(ngModel)]="confirmPass"
               />
               <label for="confirm_password" class="floating-label">Confirm Password</label>
             </div>

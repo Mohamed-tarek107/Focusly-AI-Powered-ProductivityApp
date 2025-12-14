@@ -3,6 +3,7 @@ const db = require("../db.js");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const sendMail = require("./mailer.js");
+const crypto = require("crypto");
 
 const register = async (req, res) => {
     
@@ -69,7 +70,7 @@ const errors = validationResult(req);
 
 
     try {
-    
+    const [existingUser] = await db.execute("SELECT * FROM users WHERE email = ? OR phone_number = ?",[email || null, phone_number || null])
     if (existingUser.length === 0) {
         return res.status(400).json({ message: "User not registered" });
     }
@@ -154,130 +155,190 @@ const emailVerification = async (req, res) => {
     try {
         const { email } = req.body;
 
-    const [existingUser] = await db.execute(
-      "SELECT * FROM users WHERE email = ?",
-        [email]
-    );
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
 
-    if(existingUser.length == 0){
-        return res.status(400).json({ message: "User not registered" });
-    }
-    const { code, expiresAt } = generateVerification();
+        const [existingUser] = await db.execute(
+            "SELECT * FROM users WHERE email = ?",
+            [email]
+        );
 
-    const hashedCode = crypto
-        .createHash("sha256")
-        .update(code)
-        .digest("hex");
-    
-    const {reset_token, reset_token_expires} = generateResetTokens()
+        if(existingUser.length == 0){
+            return res.status(400).json({ message: "User not registered" });
+        }
 
-    const resetToken = crypto
-        .createHash("sha256")
-        .update(reset_token)
-        .digest("hex");
+        const { code, expiresAt } = generateVerification();
+        const hashedCode = crypto
+            .createHash("sha256")
+            .update(code)
+            .digest("hex");
+        
+        const {reset_token, reset_token_expires} = generateResetTokens();
+        const resetToken = crypto
+            .createHash("sha256")
+            .update(reset_token)
+            .digest("hex");
 
         await db.execute(
-        `UPDATE users 
-        SET reset_code = ?, reset_expires = ?, reset_token = ?, reset_token_expires = ?
-        WHERE email = ?`,
-        [hashedCode, expiresAt, resetToken, reset_token_expires, email ]
-    );
+            `UPDATE users 
+            SET reset_code = ?, reset_expires = ?, reset_token = ?, reset_token_expires = ?
+            WHERE email = ?`,
+            [hashedCode, expiresAt, resetToken, reset_token_expires, email]
+        );
 
-    sendMail(email,code)
+        await sendMail(email, code);
 
-    return res.status(200).json({ message: "Verification code sent to email"});
+        return res.status(200).json({ 
+            message: "Verification code sent to email",
+            resetToken: reset_token
+        });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Server error" });
+        console.error("Email verification error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 }
-
 const forgetPass = async (req,res) => {
-    const { code, token } = req.body
+    try {
+        console.log("=== CODE VERIFICATION START ===");
+        console.log("Request body:", req.body);
+        
+        const { code, token } = req.body;
 
-    if(!code){
-        return res.status(400).json({ message: "Code Not Provided" });
-    }
-    
-    const hashedToken = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
-
-    
-    
-    const [rows] = await db.execute(
-        "SELECT id, reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
+        if(!code || !token){
+            console.log("ERROR: Missing code or token");
+            return res.status(400).json({ message: "Code and token required" });
+        }
+        
+        console.log("Step 1: Hashing token");
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+        console.log("✓ Token hashed:", hashedToken.substring(0, 10) + "...");
+        
+        console.log("Step 2: Looking up user by reset_token");
+        const [rows] = await db.execute(
+            "SELECT id, reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
             [hashedToken]
-    );
+        );
 
-    if (rows.length === 0) {
-        return res.status(400).json({ message: "Wrong token or code" });
+        if (rows.length === 0) {
+            console.log("ERROR: No user found with this token");
+            return res.status(400).json({ message: "Invalid token" });
+        }
+        console.log("✓ User found");
+        console.log("Database values:", {
+            reset_code: rows[0].reset_code?.substring(0, 10) + "...",
+            reset_expires: rows[0].reset_expires,
+            reset_token_expires: rows[0].reset_token_expires
+        });
+
+        console.log("Step 3: Hashing provided code");
+        const hashedCode = crypto
+            .createHash("sha256")
+            .update(code)
+            .digest("hex");
+        console.log("✓ Code hashed:", hashedCode.substring(0, 10) + "...");
+
+        // Convert datetime to timestamp for comparison
+        const tokenExpires = new Date(rows[0].reset_token_expires).getTime();
+        const codeExpires = new Date(rows[0].reset_expires).getTime();
+        const now = Date.now();
+
+        console.log("Step 4: Checking token expiration");
+        console.log("Token expires:", new Date(tokenExpires));
+        console.log("Current time:", new Date(now));
+        
+        if(tokenExpires < now){
+            console.log("ERROR: Token expired");
+            return res.status(400).json({ message: "Reset token expired" });
+        }
+        console.log("✓ Token not expired");
+
+        console.log("Step 5: Comparing codes");
+        console.log("Expected code hash:", rows[0].reset_code?.substring(0, 10) + "...");
+        console.log("Provided code hash:", hashedCode.substring(0, 10) + "...");
+        console.log("Codes match:", rows[0].reset_code === hashedCode);
+        
+        if(rows[0].reset_code !== hashedCode){
+            console.log("ERROR: Code mismatch");
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+        console.log("✓ Code matches");
+
+        console.log("Step 6: Checking code expiration");
+        console.log("Code expires:", new Date(codeExpires));
+        
+        if (codeExpires < now) {
+            console.log("ERROR: Code expired");
+            return res.status(400).json({ message: "Verification code expired" });
+        }
+        console.log("✓ Code not expired");
+
+        console.log("Step 7: Clearing code from database");
+        await db.execute(
+            "UPDATE users SET reset_code = NULL, reset_expires = NULL WHERE reset_token = ?",
+            [hashedToken]
+        );
+        console.log("✓ Code cleared");
+
+        console.log("=== CODE VERIFICATION SUCCESS ===");
+        res.status(200).json({ message: "Code verified successfully" });
+    } catch (error) {
+        console.error("=== CODE VERIFICATION ERROR ===");
+        console.error("Error:", error.message);
+        console.error("Stack:", error.stack);
+        return res.status(500).json({ message: "Server error" });
     }
-
-
-    const hashedCode = crypto
-    .createHash("sha256")
-    .update(code)
-    .digest("hex")
-
-    if(rows[0].reset_token_expires < Date.now()){
-        return res.status(400).json({ message: "Reset Token expired" });
-    }
-
-    if(rows[0].reset_code !== hashedCode){
-        return res.status(400).json({ message: "Wrong Verification Code" });
-    }
-
-    if (rows[0].reset_expires < Date.now()) {
-        return res.status(400).json({ message: "Reset code expired" });
-    }
-
-    await db.execute("UPDATE users SET reset_expires = NULL, reset_code = NULL WHERE reset_token = ?",
-        [hashedToken]
-    )
-
-    res.status(200).json({ message: "Reset Completed"})
 }
 
 const changePassAfterReset = async (req,res) => {
     const { token, NewPass, ConfirmPass } = req.body;
 
     if(!NewPass || !ConfirmPass){
-        return res.status(400).json({ message: "Provide New pass and its confirmation" });
+        return res.status(400).json({ message: "Provide new password and confirmation" });
     }
 
     if(NewPass !== ConfirmPass){
-        return res.status(400).json({ message: "new Password dont match the confirmation" });
+        return res.status(400).json({ message: "Passwords do not match" });
     }
 
     try {
-    const hashedToken = crypto
-        .createHash("sha256")
-        .update(token)
-        .digest("hex");
-    
-    const [rows] = await db.execute(
-        "SELECT reset_token_expires FROM users WHERE reset_token = ?",
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+        
+        const [rows] = await db.execute(
+            "SELECT reset_token_expires FROM users WHERE reset_token = ?",
             [hashedToken]
-    );
-    if (rows.length === 0) return res.status(400).json({ message: "Invalid token" });
+        );
+        
+        if (rows.length === 0) {
+            return res.status(400).json({ message: "Invalid token" });
+        }
 
-    if(rows[0].reset_token_expires < Date.now()){
-        return res.status(400).json({ message: "Reset Token expired" });
-    }
+        // Convert datetime to timestamp for comparison
+        const tokenExpires = new Date(rows[0].reset_token_expires).getTime();
+        const now = Date.now();
 
+        if(tokenExpires < now){
+            return res.status(400).json({ message: "Reset token expired" });
+        }
 
-    const hashedNew = await bcrypt.hash(NewPass, 10)
-    await db.execute(
-        "UPDATE users SET password_hashed = ?, reset_expires = NULL, reset_token = NULL WHERE reset_token = ?",
-        [hashedNew, hashedToken]
-    );
-    
-    return res.status(200).json({ message: "Password Changed Successfully", })
+        const hashedNew = await bcrypt.hash(NewPass, 10);
+        
+        // Fixed: Use hashedToken in WHERE clause, clear both token fields
+        await db.execute(
+            "UPDATE users SET password_hashed = ?, reset_token = NULL, reset_token_expires = NULL WHERE reset_token = ?",
+            [hashedNew, hashedToken]
+        );
+        
+        return res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Server Error" });
+        console.error("Change password error:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 }
 
@@ -359,26 +420,31 @@ async function ensureAuthenticated(req, res, next) {
 
 // Helpers
 function generateVerification() {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    // Generate 6-digit code using randomBytes instead of randomInt
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     return {
-        code: crypto.randomInt(100000, 1000000).toString(),
-        expiresAt: Date.now() + 5 * 60 * 1000 
+        code: code,
+        expiresAt: expiresAt.toISOString().slice(0, 19).replace('T', ' ') // MySQL datetime format
     };
 }
 
 function generateResetTokens() {
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     return {
         reset_token: crypto.randomBytes(32).toString("hex"),
-        reset_token_expires: Date.now() + 15 * 60 * 1000 
-    };
-}
+        reset_token_expires: expiresAt.toISOString().slice(0, 19).replace('T', ' ') // MySQL datetime format
+        };
+    }
 
 
-module.exports = {  register,
-                    LoginUser,
-                    ensureAuthenticated,
-                    currentUser,
-                    refreshRoute,
-                    forgetPass,
-                    emailVerification, 
-                    changePassAfterReset
-                };
+module.exports = {  
+    register,
+    LoginUser,
+    ensureAuthenticated,
+    currentUser,
+    refreshRoute,
+    forgetPass,
+    emailVerification, 
+    changePassAfterReset
+};

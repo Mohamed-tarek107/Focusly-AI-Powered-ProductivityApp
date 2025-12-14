@@ -5,10 +5,10 @@ const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 //limiter 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5 
-});
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000,
+//     max: 5 
+// });
 //validators
 const registerValidation = [
     body('email')
@@ -73,10 +73,16 @@ const loginValidation = [
 
 
 router.post("/register", registerValidation,  register);
-router.post("/login", loginValidation, limiter, LoginUser);
-router.post("/forgot-password",limiter, emailVerification);
-router.post("/verify-reset", limiter, forgetPass);
-router.post("/reset-password",limiter, changePassAfterReset);
+router.post("/login", loginValidation, LoginUser);
+router.post("/forgot-password", emailVerification);
+router.post("/verify-reset", forgetPass);
+router.post("/reset-password", changePassAfterReset);
 router.get("/current", ensureAuthenticated, currentUser);
 router.post("/refresh-token", refreshRoute);
+
+//production: 
+//router.post("/reset-password",limiter, changePassAfterReset);
+// router.post("/forgot-password",limiter, emailVerification);
+// router.post("/verify-reset", limiter, forgetPass);
+//router.post("/login", loginValidation, limiter, LoginUser);
 module.exports = router;

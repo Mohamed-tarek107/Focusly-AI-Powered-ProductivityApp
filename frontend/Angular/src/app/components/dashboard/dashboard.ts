@@ -47,6 +47,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.cdr.detectChanges();
     this.user.current().subscribe({
       next: (data) => {
         this.currentUser = data.fullname;
