@@ -82,7 +82,6 @@ export class TasksComponent implements OnInit {
             due_date: task.due_date,
             is_done: task.is_done == 1,
           }))
-          console.log('✅ Tasks loaded:', this.tasks);
           this.cdr.detectChanges();
         }
       },
@@ -161,7 +160,7 @@ export class TasksComponent implements OnInit {
 
   markDone(taskId: number) {
       this.task.markDone(taskId).subscribe({
-        next: (res) => {
+        next: () => {
           setTimeout(() => {
             this.tasks = this.tasks.filter((task) => task.id !== taskId);
             this.cdr.detectChanges();

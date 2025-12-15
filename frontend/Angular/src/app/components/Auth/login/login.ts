@@ -25,7 +25,6 @@ export class Login {
   onLogin(){
       this.Auth.login(this.email,this.password).subscribe({
             next: (res: any) => {
-              console.log('Login Successful:', res)
               this.Auth.saveAccessToken(res.newaccesstoken)
               this.message = 'login successful!'
               this.errorMessage = ''

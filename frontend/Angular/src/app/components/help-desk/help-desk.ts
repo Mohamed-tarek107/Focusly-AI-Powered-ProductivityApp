@@ -26,7 +26,6 @@ export class HelpDesk implements OnInit{
   ngOnInit() {
     this.user.current().subscribe({
       next: (data) => {
-          console.log('User data received:', data); // Debug 
           this.currentUser = data.fullname
           this.cdr.detectChanges();
       },
@@ -61,11 +60,8 @@ export class HelpDesk implements OnInit{
     }
 
     this.setting.takeFeedback(this.feedback, this.rating as unknown as Rating).subscribe({
-      next: (res) => {
-        console.log('Feedback submitted successfully:', res)
+      next: () => {
         alert('Thank you for your feedback!');
-
-
          // Reset form
         this.rating = 0;
         this.feedback = '';

@@ -24,19 +24,6 @@ export class Register {
   fname = ''
   lname = ''
 
-  //Register(fname: string,lname:string,email: string,password: string,confirmpass: string,phone_number: string, type: string,company: string){
-    //   return this.http.post(`${this.AuthApi}/register`,{
-    //     fname,
-    //     lname,
-    //     email,
-    //     password,
-    //     confirmpass,
-    //     phone_number,
-    //     type,
-    //     company
-    //   })
-    // }
-
   constructor(private auth: Authservice, private router: Router){}
 
   onRegister(){
@@ -50,11 +37,9 @@ export class Register {
       this.type,
       this.company
     ).subscribe({
-      next: (res: any) => {
-        console.log('✅ Registered Successfully:', res);
+      next: () => {
         this.message = '✅ Successfully registered! Redirecting to login...';
         this.errormessage = '';
-
         // Wait 2 seconds, then redirect to login
         setTimeout(() => {
           this.router.navigate(['/Login']);

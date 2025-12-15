@@ -51,27 +51,17 @@ export class ForgetPage {
   ) {}
 
   // STEP 1: email
-  onEmailSubmit() {
-    console.log('=== EMAIL SUBMIT CALLED ===');
-    console.log('Current step:', this.currentStep);
-    console.log('Is submitting:', this.isEmailSubmitting);
-    console.log('Email value:', this.email);
-    
+  onEmailSubmit() {   
     if (this.isEmailSubmitting) {
       console.log('Already submitting, returning');
       return;
     }
-    
     this.isEmailSubmitting = true;
     this.clearEmailMessages();
-    console.log('Making API call...');
 
     this.auth.emailVerification(this.email).subscribe({
       next: (res: any) => {
-        console.log('=== EMAIL SUCCESS ===');
-        console.log('Response:', res);
-        console.log('Reset token:', res.resetToken);
-        
+
         this.verificationToken = res.resetToken;
         this.isEmailSubmitting = false;
         this.currentStep = 'code';
@@ -80,8 +70,6 @@ export class ForgetPage {
         
         // Force change detection
         this.cdr.detectChanges();
-        
-        console.log('Change detection triggered');
         this.clearEmailMessages();
       },
       error: (err) => {
@@ -99,31 +87,22 @@ export class ForgetPage {
 
   // STEP 2: code
   onCodeSubmit() {
-    console.log('=== CODE SUBMIT CALLED ===');
-    console.log('Current step:', this.currentStep);
-    console.log('Is submitting:', this.isCodeSubmitting);
-    console.log('Code value:', this.code);
-    console.log('Verification token:', this.verificationToken);
-    
     if (this.isCodeSubmitting) {
       console.log('Already submitting, returning');
       return;
     }
     
     if (!this.verificationToken) {
-      console.log('No verification token!');
       this.showCodeError('Missing verification token');
       return;
     }
 
     this.isCodeSubmitting = true;
     this.clearCodeMessages();
-    console.log('Making API call...');
+    
 
     this.auth.codeVerification(this.code, this.verificationToken).subscribe({
       next: () => {
-        console.log('=== CODE SUCCESS ===');
-        
         this.showCodeSuccess('Code verified successfully');
         this.isCodeSubmitting = false;
         
@@ -133,7 +112,6 @@ export class ForgetPage {
           
           this.clearCodeMessages();
           this.cdr.detectChanges();
-          console.log('Change detection triggered');
         }, 1000);
       },
       error: (err) => {
@@ -150,12 +128,7 @@ export class ForgetPage {
   }
 
   // STEP 3: reset
-  onResetSubmit() {
-    console.log('=== RESET SUBMIT CALLED ===');
-    console.log('Current step:', this.currentStep);
-    console.log('Is submitting:', this.isResetSubmitting);
-    console.log('Verification token:', this.verificationToken);
-    
+  onResetSubmit() {  
     if (this.isResetSubmitting) {
       console.log('Already submitting, returning');
       return;
@@ -181,11 +154,9 @@ export class ForgetPage {
 
     this.isResetSubmitting = true;
     this.clearResetMessages();
-    console.log('Making API call...');
 
     this.auth.resetPass(this.verificationToken, this.newPass, this.confirmPass).subscribe({
       next: () => {
-        console.log('=== RESET SUCCESS ===');
         
         this.showResetSuccess('Password reset successfully! Redirecting...');
         this.cdr.detectChanges();

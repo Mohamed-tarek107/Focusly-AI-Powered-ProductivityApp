@@ -33,13 +33,13 @@ export class Dashboard implements OnInit, AfterViewInit {
   today = new Date();
   isCalendarOpen = false;
   
-  // User dropdown state
+
   isUserDropdownOpen = false;
 
   tasks: any[] = [];
-  doneTasks: any[] = []; // For display only (first 3)
-  allDoneTasks: any[] = []; // All done tasks for calculations
-  allTasks: any[] = []; // All tasks (both done and incomplete)
+  doneTasks: any[] = [];
+  allDoneTasks: any[] = []; 
+  allTasks: any[] = []; 
   weeklyTaskData: number[] = [0, 0, 0, 0, 0, 0, 0];
 
   constructor(
@@ -57,16 +57,12 @@ export class Dashboard implements OnInit, AfterViewInit {
       },
     });
 
-    // Load done tasks first, then incomplete tasks
-    // This ensures allTasks is properly populated
     this.loadDoneTasks();
     this.setCurrentMonth();
     this.generateCalendar();
   }
 
-  ngAfterViewInit(): void {
-    // Charts will be created after data loads
-  }
+  ngAfterViewInit(): void {}
 
   // ----------------- User Dropdown -----------------
   toggleUserDropdown() {
@@ -524,9 +520,6 @@ handleLogout() {
 
         // Regenerate calendar after marking task as done
         this.generateCalendar();
-        
-        // Reload all data to ensure consistency
-        // loadDoneTasks() will call loadTasks() after it completes
         this.loadDoneTasks();
         this.cdr.detectChanges();
       },

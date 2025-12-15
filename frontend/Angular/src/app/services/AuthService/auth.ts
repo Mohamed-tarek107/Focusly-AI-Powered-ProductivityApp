@@ -11,16 +11,7 @@ export class Authservice {
     private AuthApi = 'http://localhost:5000/api/auth';
 
     constructor(private http: HttpClient){}
-
-    // fname,
-    // lname,
-    // email,
-    // password,
-    // confirmpass,
-    // phone_number,
-    // company,
-    // type,
-
+    
     Register(fname: string,lname:string,email: string,password: string,confirmpass: string,phone_number: string, type: string,company: string){
       return this.http.post(`${this.AuthApi}/register`,{
         fname,

@@ -329,7 +329,6 @@ const changePassAfterReset = async (req,res) => {
 
         const hashedNew = await bcrypt.hash(NewPass, 10);
         
-        // Fixed: Use hashedToken in WHERE clause, clear both token fields
         await db.execute(
             "UPDATE users SET password_hashed = ?, reset_token = NULL, reset_token_expires = NULL WHERE reset_token = ?",
             [hashedNew, hashedToken]
