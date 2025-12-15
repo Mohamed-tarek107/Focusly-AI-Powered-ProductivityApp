@@ -19,18 +19,27 @@
                 name="email"
                 type="email"
                 required
+                [class.error]="emailError"
+                [class.success]="emailSuccess"
                 class="form-control"
                 placeholder=" "
                 [(ngModel)]="email"
+                [disabled]="isEmailSubmitting"
               />
               <label for="forgot_email" class="floating-label">Email</label>
+            </div>
+
+            <div *ngIf="emailMessage" [class.error]="emailError" [class.success]="emailSuccess" class="message-box show">
+              {{ emailMessage }}
             </div>
 
             <div class="form-row options-row">
               <a class="forgot-link" [routerLink]="['/Login']">Remember?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Send Verification</button>
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="isEmailSubmitting">
+              {{ isEmailSubmitting ? 'Sending...' : 'Send Verification' }}
+            </button>
           </form>
 
           <div class="text-center mt-3">
@@ -60,6 +69,7 @@
                 placeholder=" "
                 maxlength="6"
                 [(ngModel)]="code"
+                [disabled]="isCodeSubmitting"
               />
               <label for="verification_code" class="floating-label">Verification Code</label>
             </div>
@@ -68,8 +78,8 @@
               {{ codeMessage }}
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">
-              Verify Code
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="isCodeSubmitting">
+              {{ isCodeSubmitting ? 'Verifying...' : 'Verify Code' }}
             </button>
           </form>
 
@@ -96,6 +106,7 @@
                 class="form-control"
                 placeholder=" "
                 [(ngModel)]="newPass"
+                [disabled]="isResetSubmitting"
               />
               <label for="new_password" class="floating-label">New Password</label>
             </div>
@@ -111,6 +122,7 @@
                 class="form-control"
                 placeholder=" "
                 [(ngModel)]="confirmPass"
+                [disabled]="isResetSubmitting"
               />
               <label for="confirm_password" class="floating-label">Confirm Password</label>
             </div>
@@ -119,7 +131,9 @@
               {{ resetMessage }}
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Reset Password</button>
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="isResetSubmitting">
+              {{ isResetSubmitting ? 'Resetting...' : 'Reset Password' }}
+            </button>
           </form>
         </div>
 
