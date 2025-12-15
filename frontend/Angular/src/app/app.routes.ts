@@ -7,6 +7,7 @@ import { TasksComponent } from './components/tasks-component/tasks-component';
 import { AiAssistant } from './components/AiAssistant/ai-assistant';
 import { AccountSettings } from './components/account-settings/account-settings';
 import { HelpDesk } from './components/help-desk/help-desk';
+import { NotfoundPage } from './components/notfound-page/notfound-page';
 
 
 export const routes: Routes = [
@@ -18,5 +19,6 @@ export const routes: Routes = [
     { path: 'Tasks', component: TasksComponent},
     { path: 'AiAssistant', component: AiAssistant},
     { path: 'settings', component: AccountSettings},
-    { path: 'help', component: HelpDesk}
+    { path: 'help', component: HelpDesk},
+    { path: '**', component: NotfoundPage }
 ];
