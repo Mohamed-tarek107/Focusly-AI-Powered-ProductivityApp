@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, AfterViewInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Navbar } from '../navbar/navbar';
 import { Authservice } from '../../services/AuthService/auth';
 import { AccountSettingsService } from '../../services/AccountSettings/account-settings';
@@ -32,6 +32,9 @@ export class Dashboard implements OnInit, AfterViewInit {
   calendarDates: Array<{ day: number; isCurrentMonth: boolean; isToday: boolean; hasDeadline: boolean }> = [];
   today = new Date();
   isCalendarOpen = false;
+  
+  // User dropdown state
+  isUserDropdownOpen = false;
 
   tasks: any[] = [];
   doneTasks: any[] = []; // For display only (first 3)
@@ -40,15 +43,15 @@ export class Dashboard implements OnInit, AfterViewInit {
   weeklyTaskData: number[] = [0, 0, 0, 0, 0, 0, 0];
 
   constructor(
-    private user: Authservice,
+    private auth: Authservice,
     private cdr: ChangeDetectorRef,
-    private setting: AccountSettingsService,
-    private task: TasksService
+    private task: TasksService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.cdr.detectChanges();
-    this.user.current().subscribe({
+    this.auth.current().subscribe({
       next: (data) => {
         this.currentUser = data.fullname;
       },
@@ -64,6 +67,36 @@ export class Dashboard implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Charts will be created after data loads
   }
+
+  // ----------------- User Dropdown -----------------
+  toggleUserDropdown() {
+    this.isUserDropdownOpen = !this.isUserDropdownOpen;
+  }
+
+  // Close dropdown when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const clickedInside = target.closest('.user-menu') || target.closest('.user-dropdown');
+    
+    if (!clickedInside && this.isUserDropdownOpen) {
+      this.isUserDropdownOpen = false;
+    }
+  }
+
+// Logout handler
+handleLogout() {
+  console.log('Logout clicked');
+  try {
+      this.isUserDropdownOpen = false;
+      this.auth.logout();
+      this.router.navigate(['/Login']);
+      this.cdr.detectChanges();
+  } catch (error) {
+    console.log("Error logging out", error)
+  }
+
+}
 
   // ----------------- Charts -----------------
   createProductivityChart(): void {

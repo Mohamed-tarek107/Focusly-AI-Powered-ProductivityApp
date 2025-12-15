@@ -101,7 +101,7 @@ export class Authservice {
       return localStorage.getItem("accessToken")
     }
 
-    logout(){
+    logout(): void{
       localStorage.removeItem('accessToken')
     }
 

@@ -14,8 +14,16 @@
         >
           👤
         </button>
-        <div class="user-menu">
+        <div class="user-menu" (click)="toggleUserDropdown()">
           <span>{{ currentUser }}</span> <span class="dropdown">▼</span>
+        </div>
+        
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" *ngIf="isUserDropdownOpen">
+          <div class="dropdown-item" (click)="handleLogout()">
+            <span class="dropdown-icon">🚪</span>
+            <span>Logout</span>
+          </div>
         </div>
       </div>
     </div>
