@@ -6,7 +6,7 @@
 ![Angular](https://img.shields.io/badge/Angular-20.3.0-red?style=flat-square&logo=angular)
 ![Node.js](https://img.shields.io/badge/Node.js-Express-green?style=flat-square&logo=node.js)
 ![MySQL](https://img.shields.io/badge/MySQL-Database-orange?style=flat-square&logo=mysql)
-![Gemini AI](https://img.shields.io/badge/Gemini-AI-purple?style=flat-square)
+![Gemini AI API](https://img.shields.io/badge/Gemini-AI-purple?style=flat-square)
 
 **A modern, intelligent productivity application powered by Google Gemini AI**
 
