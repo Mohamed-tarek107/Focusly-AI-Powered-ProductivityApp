@@ -9,6 +9,8 @@ import { Observable, tap } from 'rxjs';
 })
 export class Authservice {
     private AuthApi = 'http://localhost:5000/api/auth';
+    isLoggedIn = false
+
 
     constructor(private http: HttpClient){}
     
@@ -25,12 +27,17 @@ export class Authservice {
       })
     }
 
-    login(email: string,password: string){
-      return this.http.post(`${this.AuthApi}/login`,
-        { email, password },
-        { withCredentials: true }
-      )
-    }
+    login(email: string, password: string): Observable<any> {
+    return this.http.post(
+      `${this.AuthApi}/login`,
+      { email, password },
+      { withCredentials: true } // send cookies
+    ).pipe(
+      tap(() => {
+        this.isLoggedIn = true; // set flag on successful login
+      })
+    );
+  }
 
     refreshtoken(){
       return this.http.post<{ newaccesstoken: string} >(
@@ -71,9 +78,16 @@ export class Authservice {
         );
       }
 
-    logout(): Observable<any>{
-      return this.http.post(`${this.AuthApi}/logout`,{},{ withCredentials: true })
-  }    
+    logout(): Observable<any> {
+    return this.http.post(
+      `${this.AuthApi}/logout`,
+      {},
+      { withCredentials: true }
+    ).pipe(
+      tap(() => {
+        this.isLoggedIn = false; // reset flag on logout
+      })
+    );
+  }
 }
-
 

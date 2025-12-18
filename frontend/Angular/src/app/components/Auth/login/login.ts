@@ -24,8 +24,7 @@ export class Login {
   
   onLogin(){
       this.Auth.login(this.email,this.password).subscribe({
-            next: (res: any) => {
-              this.Auth.saveAccessToken(res.newaccesstoken)
+            next: () => {
               this.message = 'login successful!'
               this.errorMessage = ''
               this.router.navigate(['/Dashboard']);

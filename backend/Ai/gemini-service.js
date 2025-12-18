@@ -49,7 +49,7 @@ class GeminiService{
             - title (string, required)
             - start_date (string, required, format: "YYYY-MM-DD", example: "2023-12-25")
             - due_date (string, required, format: "YYYY-MM-DD", example: "2024-12-23")
-            - assigned_to (string, required, name of person)
+            - assigned_to (string, name of person, default: "Me")
 
             **Optional Fields:**
             - task_description (string, default: "N/A")
