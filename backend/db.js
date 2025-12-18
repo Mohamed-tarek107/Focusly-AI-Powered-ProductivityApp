@@ -4,11 +4,11 @@ const mysql = require("mysql2/promise");
 
 
 const db = mysql.createPool({
-  host: 'localhost',   
-  user: 'root',         
+  host: process.env.DB_HOST,   
+  user: process.env.DB_USER,         
   password: process.env.DBPass,
-  database: 'productivity_app',
-  timezone: 'Z'  
+  database: process.env.DB_NAME,
+  timezone: process.env.DB_TZ
 });
 
 (async () => {
