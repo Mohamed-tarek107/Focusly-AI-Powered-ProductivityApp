@@ -11,31 +11,16 @@ export class Interceptors implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     //get token 
-    const token = this.auth.getaccessToken()
-    console.log('🔍 Token exists:', !!token);
-    console.log('🔍 Request URL:', req.url);
+    const authReq = req.clone({ withCredentials: true })
 
-    let authReq = req;
-    if(token){
-        authReq = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-    }
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if(error.status === 401){
-          
+          // (backend reads refresh token cookie)
           return this.auth.refreshtoken().pipe(
-            switchMap((res) => {
-              this.auth.saveAccessToken(res.newaccesstoken);
-              const newReq = req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${res.newaccesstoken}`
-                }
-              });
-              return next.handle(newReq);
+            switchMap(() => {
+              // (cookies are automatically sent)
+              return next.handle(authReq);
             }),
             catchError(() => {
               this.auth.logout();
