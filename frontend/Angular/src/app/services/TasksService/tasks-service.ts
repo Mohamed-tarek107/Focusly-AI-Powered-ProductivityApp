@@ -23,19 +23,13 @@ export class TasksService {
 
   private taskApi = 'http://localhost:5000/api/tasks';
 
-    private token: string | null = null;
-
-    constructor(private http: HttpClient){
-      this.token = localStorage.getItem('accessToken');
-    }
+    constructor(private http: HttpClient){}
 
     getAllTasks(){
       
-      return this.http.get(`${this.taskApi}/getAllTasks`,{
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
-      });
+      return this.http.get(`${this.taskApi}/getAllTasks`,
+        { withCredentials: true }
+      );
     
     }
 
@@ -55,11 +49,7 @@ export class TasksService {
         
         return this.http.post(`${this.taskApi}/createTask`, 
         { title, task_description, priority, task_status, assigned_to, start_date, due_date },
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        }
+        { withCredentials: true }
       )
     } 
     
@@ -75,40 +65,28 @@ export class TasksService {
   ){
       
       return this.http.put(`${this.taskApi}/editTask/${id}`, updates,
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        })
+        { withCredentials: true }
+      )
     } 
 
 
     
     deleteTask(id: number){
       return this.http.delete(`${this.taskApi}/deleteTask/${id}`,
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        })
+        { withCredentials: true }
+      )
     }
 
     markDone(id: number){
       return this.http.put(`${this.taskApi}/markDone/${id}`, {}, 
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        })
+        { withCredentials: true }
+      )
     }
 
 
     getDoneTasks(){
       return this.http.get(`${this.taskApi}/getDoneTasks`,
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        })
+        { withCredentials: true }
+      )
     }
 }

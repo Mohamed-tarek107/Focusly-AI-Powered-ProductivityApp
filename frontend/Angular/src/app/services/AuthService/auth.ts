@@ -41,19 +41,9 @@ export class Authservice {
     }
 
     current<T = { fullname: string }>(): Observable<T> {
-  const accessToken = localStorage.getItem('accessToken');
-
-  if (!accessToken) {
-    return new Observable(observer => {
-      observer.error({ message: 'No token found' });
-    });
-  }
-
-  return this.http.get<T>(`${this.AuthApi}/current`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
+  return this.http.get<T>(`${this.AuthApi}/current`, 
+    { withCredentials: true }
+  );
 }
     
       emailVerification(email: string) {
@@ -83,22 +73,16 @@ export class Authservice {
 
 
 
-    saveAccessToken(token: string){
-      return localStorage.setItem('accessToken', token)
-    }
+    
 
 
-    getaccessToken(): string | null{
-      return localStorage.getItem("accessToken")
-    }
+    
 
     logout(): void{
-      localStorage.removeItem('accessToken')
+      
     }
 
-    isloggedin(): boolean {
-      return !!localStorage.getItem('accessToken') 
-      }
+    
     }
 
 

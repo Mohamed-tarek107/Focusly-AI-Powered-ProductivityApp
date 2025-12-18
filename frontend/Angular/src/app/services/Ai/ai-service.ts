@@ -8,20 +8,14 @@ export class AiService {
 
 
   private chatApi = 'http://localhost:5000/api/ai';
-  private token: string | null = null;
+  
 
-    constructor(private http: HttpClient){
-      this.token = localStorage.getItem('accessToken');
-    }
+    constructor(private http: HttpClient){}
 
     chat(msg: string, history: any []){ 
       return this.http.post(`${this.chatApi}/chat`, 
           {msg, history},
-        {
-          headers:{
-            Authorization: `Bearer ${this.token}`
-          }
-        }
+        { withCredentials: true }
       )
     }
   }
