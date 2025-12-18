@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 
 
@@ -71,18 +71,9 @@ export class Authservice {
         );
       }
 
-
-
-    
-
-
-    
-
-    logout(): void{
-      
-    }
-
-    
-    }
+    logout(): Observable<any>{
+      return this.http.post(`${this.AuthApi}/logout`,{},{ withCredentials: true })
+  }    
+}
 
 

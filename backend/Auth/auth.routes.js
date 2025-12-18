@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, LoginUser , ensureAuthenticated , currentUser, refreshRoute, forgetPass, emailVerification, changePassAfterReset } = require("./auth.controller");
+const { register, LoginUser , ensureAuthenticated , currentUser, refreshRoute, forgetPass, emailVerification, changePassAfterReset, logout } = require("./auth.controller");
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const router = express.Router();
@@ -79,6 +79,7 @@ router.post("/verify-reset", forgetPass);
 router.post("/reset-password", changePassAfterReset);
 router.get("/current", ensureAuthenticated, currentUser);
 router.post("/refresh-token", refreshRoute);
+router.post("/logout", logout)
 
 //production: 
 //router.post("/reset-password",limiter, changePassAfterReset);

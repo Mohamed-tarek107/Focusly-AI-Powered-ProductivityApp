@@ -106,6 +106,13 @@ const errors = validationResult(req);
         sameSite: "strict", // prevent CSRF
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ayam
     })
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true, 
+        secure: true,
+        path: "/",
+        sameSite: "strict", 
+        maxAge: 15 * 60 * 1000 
+    })
 
 
     return res.status(200).json({
@@ -197,95 +204,52 @@ const emailVerification = async (req, res) => {
 }
 const forgetPass = async (req,res) => {
     try {
-        console.log("=== CODE VERIFICATION START ===");
-        console.log("Request body:", req.body);
-        
         const { code, token } = req.body;
 
         if(!code || !token){
-            console.log("ERROR: Missing code or token");
             return res.status(400).json({ message: "Code and token required" });
         }
-        
-        console.log("Step 1: Hashing token");
+
         const hashedToken = crypto
             .createHash("sha256")
             .update(token)
             .digest("hex");
-        console.log("✓ Token hashed:", hashedToken.substring(0, 10) + "...");
-        
-        console.log("Step 2: Looking up user by reset_token");
+
         const [rows] = await db.execute(
             "SELECT id, reset_code, reset_expires, reset_token_expires FROM users WHERE reset_token = ?",
             [hashedToken]
         );
 
         if (rows.length === 0) {
-            console.log("ERROR: No user found with this token");
             return res.status(400).json({ message: "Invalid token" });
         }
-        console.log("✓ User found");
-        console.log("Database values:", {
-            reset_code: rows[0].reset_code?.substring(0, 10) + "...",
-            reset_expires: rows[0].reset_expires,
-            reset_token_expires: rows[0].reset_token_expires
-        });
 
-        console.log("Step 3: Hashing provided code");
         const hashedCode = crypto
             .createHash("sha256")
             .update(code)
             .digest("hex");
-        console.log("✓ Code hashed:", hashedCode.substring(0, 10) + "...");
 
         // Convert datetime to timestamp for comparison
         const tokenExpires = new Date(rows[0].reset_token_expires).getTime();
         const codeExpires = new Date(rows[0].reset_expires).getTime();
         const now = Date.now();
 
-        console.log("Step 4: Checking token expiration");
-        console.log("Token expires:", new Date(tokenExpires));
-        console.log("Current time:", new Date(now));
-        
         if(tokenExpires < now){
-            console.log("ERROR: Token expired");
             return res.status(400).json({ message: "Reset token expired" });
         }
-        console.log("✓ Token not expired");
-
-        console.log("Step 5: Comparing codes");
-        console.log("Expected code hash:", rows[0].reset_code?.substring(0, 10) + "...");
-        console.log("Provided code hash:", hashedCode.substring(0, 10) + "...");
-        console.log("Codes match:", rows[0].reset_code === hashedCode);
-        
         if(rows[0].reset_code !== hashedCode){
-            console.log("ERROR: Code mismatch");
             return res.status(400).json({ message: "Invalid verification code" });
         }
-        console.log("✓ Code matches");
 
-        console.log("Step 6: Checking code expiration");
-        console.log("Code expires:", new Date(codeExpires));
-        
         if (codeExpires < now) {
-            console.log("ERROR: Code expired");
             return res.status(400).json({ message: "Verification code expired" });
         }
-        console.log("✓ Code not expired");
-
-        console.log("Step 7: Clearing code from database");
         await db.execute(
             "UPDATE users SET reset_code = NULL, reset_expires = NULL WHERE reset_token = ?",
             [hashedToken]
         );
-        console.log("✓ Code cleared");
-
-        console.log("=== CODE VERIFICATION SUCCESS ===");
         res.status(200).json({ message: "Code verified successfully" });
     } catch (error) {
-        console.error("=== CODE VERIFICATION ERROR ===");
-        console.error("Error:", error.message);
-        console.error("Stack:", error.stack);
         return res.status(500).json({ message: "Server error" });
     }
 }
@@ -337,6 +301,31 @@ const changePassAfterReset = async (req,res) => {
         return res.status(500).json({ message: "Server error" });
     }
 }
+
+const logout = async (req,res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(400).json({ message: "No refresh token found" });
+        }
+
+        
+        await db.execute(
+            "DELETE FROM refreshtokens WHERE refresh_tokens = ?",
+            [refreshToken]
+        );
+
+        res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: 'strict' });
+
+        return res.status(200).json({ message: "Logged Out" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
 
 
 const refreshRoute = async (req,res) => {
@@ -442,5 +431,6 @@ module.exports = {
     refreshRoute,
     forgetPass,
     emailVerification, 
-    changePassAfterReset
+    changePassAfterReset,
+    logout
 };
