@@ -70,7 +70,18 @@ const errors = validationResult(req);
 
 
     try {
-    const [existingUser] = await db.execute("SELECT * FROM users WHERE email = ? OR phone_number = ?",[email || null, phone_number || null])
+    let params = [];
+    let query = "SELECT * FROM users WHERE ";
+    
+    if (email) {
+        query += "email = ?";
+        params.push(email);
+    } else {
+        query += "phone_number = ?";
+        params.push(phone_number);
+    }
+
+    const [existingUser] = await db.execute(query,params)
     if (existingUser.length === 0) {
         return res.status(400).json({ message: "User not registered" });
     }
@@ -85,8 +96,8 @@ const errors = validationResult(req);
     const userId = user.id;
     //jwt
     const accessToken = jwt.sign({ id: userId }, accessTokenSECRET, {
-        subject: "accessApi",
-        expiresIn: "1h",
+        subject: "accessToken",
+        expiresIn: "15m",
     });
 
     const refreshToken = jwt.sign({ id: userId }, refreshTokenSECRET,{
@@ -101,14 +112,14 @@ const errors = validationResult(req);
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true, //not accessible in js
-        secure: true,
+        secure: false,
         path: "/", // only send to this endpoint ( ALL endpoint)
         sameSite: "strict", // prevent CSRF
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ayam
     })
     res.cookie("accessToken", accessToken, {
         httpOnly: true, 
-        secure: true,
+        secure: false,
         path: "/",
         sameSite: "strict", 
         maxAge: 15 * 60 * 1000 
@@ -117,8 +128,6 @@ const errors = validationResult(req);
 
     return res.status(200).json({
         id: userId,
-        email: email,
-        newaccesstoken: accessToken,
         message: "User Logged in successfully",
     });
     } catch (error) {
@@ -312,7 +321,7 @@ const logout = async (req,res) => {
 
         
         await db.execute(
-            "DELETE FROM refreshtokens WHERE refresh_tokens = ?",
+            "DELETE FROM refreshtokens WHERE refresh_token = ?",
             [refreshToken]
         );
 
@@ -333,70 +342,63 @@ const refreshRoute = async (req,res) => {
     const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
 
     if(!refreshtoken) return res.status(401).json({ message: "No Refreshtokens" });
-
-    const [rows] = await db.execute(
+    try {
+        const [rows] = await db.execute(
         "SELECT * FROM refreshtokens WHERE refresh_token = ?",
         [refreshtoken]
     )
 
-    if(rows.length === 0) return res.status(403).json({ message: "invalid token" })
+    if(rows.length === 0) return res.status(403).json({ message: "invalid refresh token" })
 
-    jwt.verify(refreshtoken, process.env.JWT_Refresh_SECRET, async (err, user) => {
-        if(err) return res.status(403).json({ message: "expired token"});
+    jwt.verify(
+        refreshtoken,
+        process.env.JWT_Refresh_SECRET,
+        async (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: "Expired refresh token" });
+            }
 
 
-        const newRefreshToken = jwt.sign(
-                { id: rows[0].user_id }, 
-                refreshTokenSECRET,
-                { subject: "RefreshToken", expiresIn: "7d" }
-            );
-
-            //  Replace old with new
-            await db.execute("DELETE FROM refreshtokens WHERE refresh_token = ?", [refreshtoken]);
-            await db.execute(
-                "INSERT INTO refreshtokens (user_id, refresh_token, ip_address) VALUES (?, ?, ?)",
-                [rows[0].user_id, newRefreshToken, req.ip]
+        const newAccessToken = jwt.sign(
+                { id: decoded.id }, 
+                accessTokenSECRET,
+                { subject: "accessToken", expiresIn: "15m" }
             );
 
             //  Update cookie
-            res.cookie("refreshToken", newRefreshToken, {
+            res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
-                secure: false,
+                secure: false, //true in prod
                 path: "/",
                 sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
+                maxAge: 15 * 60 * 1000
             });
-
-            const newaccesstoken = jwt.sign(
-                { id: rows[0].user_id }, 
-                accessTokenSECRET, 
-                { expiresIn: "15m" }
-            );
-        res.json({ newaccesstoken }) 
+        res.json({ message: "Refreshed Token"}) 
     })
+    } catch (error) {
+        console.error("Refresh error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
 }
 
 
 async function ensureAuthenticated(req, res, next) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        console.warn('Authorization header missing or malformed');
+    const accessToken = req.cookies.accessToken
+
+
+    if (!accessToken) {
+        console.warn('Access token cookie missing');
         return res.status(401).json({ message: "Access token not found!" });
     }
-    const accessToken = authHeader.split(' ')[1];
-    const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
-    
-    if (!accessToken) {
-        return res.status(401).json({ message: "Access token not found!" });
-    }   
-
 
     try {
-        const decodedAccessToken = jwt.verify(accessToken,accessTokenSECRET);
+        const decodedAccessToken = jwt.verify(
+            accessToken,
+            process.env.JWT_AccessToken_SECRET
+    );
 
         // Provide both `id` and `user_id` to support different handlers
         req.user = { id: decodedAccessToken.id, user_id: decodedAccessToken.id };
-
         next();
     } catch (error) {
         return res.status(401).json({ message: "access token invalid or expired" });

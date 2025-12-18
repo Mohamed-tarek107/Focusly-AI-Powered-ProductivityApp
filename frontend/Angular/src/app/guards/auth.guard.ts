@@ -8,13 +8,9 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   // Backend verification
-  return auth.current().pipe(
-    map(() => {
-      auth.isLoggedIn = true;
-      return true;
-    }),
+    return auth.current().pipe(
+    map(() => true),
     catchError(() => {
-      auth.isLoggedIn = false;
       router.navigate(['/Login']);
       return of(false);
     })

@@ -40,7 +40,7 @@ export class Authservice {
   }
 
     refreshtoken(){
-      return this.http.post<{ newaccesstoken: string} >(
+      return this.http.post(
         `${this.AuthApi}/refresh-token`,
         {},
         {withCredentials: true}
