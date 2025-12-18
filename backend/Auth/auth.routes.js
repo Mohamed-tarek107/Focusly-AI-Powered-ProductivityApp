@@ -4,12 +4,14 @@ const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
-//limiter 
-// const limiter = rateLimit({
-//     windowMs: 15 * 60 * 1000,
-//     max: 5 
-// });
-//validators
+
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 5,
+    message: "Too many attempts, please try again after 5 minutes."
+});
+
+
 const registerValidation = [
     body('email')
         .trim()
@@ -73,17 +75,12 @@ const loginValidation = [
 
 
 router.post("/register", registerValidation,  register);
-router.post("/login", loginValidation, LoginUser);
-router.post("/forgot-password", emailVerification);
-router.post("/verify-reset", forgetPass);
-router.post("/reset-password", changePassAfterReset);
+router.post("/reset-password",limiter, changePassAfterReset);
+router.post("/forgot-password",limiter, emailVerification);
+router.post("/verify-reset", limiter, forgetPass);
+router.post("/login", loginValidation, limiter, LoginUser);
 router.get("/current", ensureAuthenticated, currentUser);
 router.post("/refresh-token", refreshRoute);
 router.post("/logout", logout)
 
-//production: 
-//router.post("/reset-password",limiter, changePassAfterReset);
-// router.post("/forgot-password",limiter, emailVerification);
-// router.post("/verify-reset", limiter, forgetPass);
-//router.post("/login", loginValidation, limiter, LoginUser);
 module.exports = router;
