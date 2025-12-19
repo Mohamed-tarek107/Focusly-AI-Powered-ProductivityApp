@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-
+import { environment } from '../../../environments/environment';
 
 export enum Priority {
       Low = 'Low',
@@ -21,20 +21,20 @@ export enum Status {
 })
 export class TasksService {
 
-  private taskApi = 'http://localhost:5000/api/tasks';
+    private readonly tasksApi = `${environment.apiUrl}/tasks`;
 
     constructor(private http: HttpClient){}
 
     getAllTasks(){
       
-      return this.http.get(`${this.taskApi}/getAllTasks`,
+      return this.http.get(`${this.tasksApi}/getAllTasks`,
         { withCredentials: true }
       );
     
     }
 
     getTask(id: number){
-      return this.http.get(`${this.taskApi}/getTask/${id}`)
+      return this.http.get(`${this.tasksApi}/getTask/${id}`)
     } 
     
     createTask(
@@ -47,7 +47,7 @@ export class TasksService {
         due_date: string
       ){
         
-        return this.http.post(`${this.taskApi}/createTask`, 
+        return this.http.post(`${this.tasksApi}/createTask`, 
         { title, task_description, priority, task_status, assigned_to, start_date, due_date },
         { withCredentials: true }
       )
@@ -64,7 +64,7 @@ export class TasksService {
     }> 
   ){
       
-      return this.http.put(`${this.taskApi}/editTask/${id}`, updates,
+      return this.http.put(`${this.tasksApi}/editTask/${id}`, updates,
         { withCredentials: true }
       )
     } 
@@ -72,20 +72,20 @@ export class TasksService {
 
     
     deleteTask(id: number){
-      return this.http.delete(`${this.taskApi}/deleteTask/${id}`,
+      return this.http.delete(`${this.tasksApi}/deleteTask/${id}`,
         { withCredentials: true }
       )
     }
 
     markDone(id: number){
-      return this.http.put(`${this.taskApi}/markDone/${id}`, {}, 
+      return this.http.put(`${this.tasksApi}/markDone/${id}`, {}, 
         { withCredentials: true }
       )
     }
 
 
     getDoneTasks(){
-      return this.http.get(`${this.taskApi}/getDoneTasks`,
+      return this.http.get(`${this.tasksApi}/getDoneTasks`,
         { withCredentials: true }
       )
     }

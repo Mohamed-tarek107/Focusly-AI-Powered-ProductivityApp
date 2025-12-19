@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -7,13 +8,13 @@ import { Injectable } from '@angular/core';
 export class AiService {
 
 
-  private chatApi = 'http://localhost:5000/api/ai';
+  private envApi = `${environment.apiUrl}/ai`
   
 
     constructor(private http: HttpClient){}
 
     chat(msg: string, history: any []){ 
-      return this.http.post(`${this.chatApi}/chat`, 
+      return this.http.post(`${this.envApi}/chat`, 
           {msg, history},
         { withCredentials: true }
       )
