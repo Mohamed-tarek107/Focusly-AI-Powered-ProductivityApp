@@ -7,6 +7,7 @@ import { Authservice } from '../../services/AuthService/auth';
 import { AccountSettingsService } from '../../services/AccountSettings/account-settings';
 import { Priority, Status, TasksService } from '../../services/TasksService/tasks-service';
 import { Chart, registerables } from 'chart.js';
+import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
 
@@ -54,6 +55,8 @@ export class Dashboard implements OnInit, AfterViewInit {
     this.auth.current().subscribe({
       next: (data) => {
         this.currentUser = data.fullname;
+        console.log('API URL:', environment.apiUrl);
+        console.log('Production:', environment.production);
       },
     });
 
