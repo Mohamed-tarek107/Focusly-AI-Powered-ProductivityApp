@@ -105,6 +105,8 @@ const errors = validationResult(req);
         expiresIn: "7d"
     })
 
+    // Remove old refresh token used
+    await db.execute("DELETE FROM refreshtokens WHERE user_id = ?", [existingUser[0].id]);
     await db.execute(
         "INSERT INTO refreshtokens (user_id, refresh_token, ip_address) VALUES (?,?,?)",
         [ userId, refreshToken, req.ip] 
@@ -325,8 +327,8 @@ const logout = async (req,res) => {
             [refreshToken]
         );
 
-        res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: 'strict' });
-        res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.clearCookie("accessToken", { httpOnly: true, secure: false, sameSite: 'strict', path: "/" });
+        res.clearCookie("refreshToken", { httpOnly: true, secure: false, sameSite: 'strict', path: "/"});
 
         return res.status(200).json({ message: "Logged Out" });
     } catch (err) {
@@ -340,6 +342,7 @@ const logout = async (req,res) => {
 const refreshRoute = async (req,res) => {
     const refreshtoken = req.cookies.refreshToken;
     const accessTokenSECRET = process.env.JWT_AccessToken_SECRET;
+
 
     if(!refreshtoken) return res.status(401).json({ message: "No Refreshtokens" });
     try {
@@ -364,6 +367,20 @@ const refreshRoute = async (req,res) => {
                 accessTokenSECRET,
                 { subject: "accessToken", expiresIn: "15m" }
             );
+        const newRefreshToken = jwt.sign(
+                { id: decoded.id }, 
+                process.env.JWT_Refresh_SECRET,
+                { subject: "RefreshToken", expiresIn: "7d" }
+            );
+
+            // Remove old refresh token used
+            await db.execute("DELETE FROM refreshtokens WHERE user_id = ?", [rows[0].user_id]);
+
+            // Insert new refresh token
+            await db.execute(
+                "INSERT INTO refreshtokens (user_id, refresh_token, ip_address) VALUES (?,?,?)",
+                [decoded.id, newRefreshToken, req.ip]
+            );
 
             //  Update cookie
             res.cookie("accessToken", newAccessToken, {
@@ -372,6 +389,14 @@ const refreshRoute = async (req,res) => {
                 path: "/",
                 sameSite: "strict",
                 maxAge: 15 * 60 * 1000
+            });
+
+            res.cookie("refreshToken", newRefreshToken, {
+                httpOnly: true,
+                secure: false, //true in prod
+                path: "/",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
         res.json({ message: "Refreshed Token"}) 
     })
