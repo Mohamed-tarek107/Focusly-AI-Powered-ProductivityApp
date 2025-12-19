@@ -1,11 +1,11 @@
 .navbar {
   width: 200px;
-  background-color: #fff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 0 5px var(--shadow);
   transition: width 0.3s ease;
   overflow-y: auto;
   flex-shrink: 0;
@@ -29,7 +29,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   font-size: 16px;
 }
 
@@ -43,12 +43,12 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #999;
+  color: var(--text-secondary);
   transition: transform 0.3s ease;
 }
 
 .collapse-btn:hover {
-  color: #333;
+  color: var(--text-primary);
 }
 
 .nav-menu {
@@ -68,15 +68,15 @@
   gap: 12px;
   padding: 12px 15px;
   text-decoration: none;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .nav-item a:hover {
-  background-color: #f9f9f9;
-  color: #333;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .nav-item a.active {
@@ -101,7 +101,7 @@
 
 .nav-footer {
   padding: 0 15px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-color);
   padding-top: 15px;
 }
 
@@ -145,7 +145,7 @@
 .help-link {
   display: block;
   text-decoration: none;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 12px;
   text-align: center;
   transition: color 0.3s ease;
@@ -153,5 +153,104 @@
 }
 
 .help-link:hover {
-  color: #333;
+  color: var(--text-primary);
+}
+
+/* Dark Mode Toggle */
+.dark-mode-toggle {
+  padding: 0 15px;
+  margin-bottom: 15px;
+}
+
+.dark-mode-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.dark-mode-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.dark-mode-icon {
+  font-size: 18px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-mode-label {
+  white-space: nowrap;
+}
+
+/* Dark mode styles for navbar */
+.dark-mode .navbar {
+  background-color: var(--bg-secondary);
+  border-right-color: var(--border-color);
+}
+
+.dark-mode .navbar-header {
+  border-bottom-color: var(--border-color);
+}
+
+.dark-mode .logo {
+  color: var(--text-primary);
+}
+
+.dark-mode .collapse-btn {
+  color: var(--text-secondary);
+}
+
+.dark-mode .collapse-btn:hover {
+  color: var(--text-primary);
+}
+
+.dark-mode .nav-item a {
+  color: var(--text-secondary);
+}
+
+.dark-mode .nav-item a:hover {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-mode .nav-item a.active {
+  background-color: #5b5cff;
+  color: #fff;
+}
+
+.dark-mode .nav-footer {
+  border-top-color: var(--border-color);
+}
+
+.dark-mode .help-link {
+  color: var(--text-secondary);
+}
+
+.dark-mode .help-link:hover {
+  color: var(--text-primary);
+}
+
+.dark-mode .dark-mode-btn {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .dark-mode-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }

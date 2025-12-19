@@ -8,9 +8,9 @@
       {{ isCollapsed ? '›' : '‹' }}
     </button>
   </div>
-
+  
   <ul class="nav-menu">
-    <li class="nav-item">
+    <li class="nav-item">  
       <a routerLink="/Dashboard" 
         [routerLink]="['/Dashboard']"
         routerLinkActive="active" 
@@ -49,5 +49,19 @@
 
   <div class="nav-footer" *ngIf="!isCollapsed">
     </div>
+    
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" *ngIf="showDarkModeToggle">
+      <button 
+        class="dark-mode-btn" 
+        (click)="toggleDarkMode()"
+        [title]="darkMode.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span class="dark-mode-icon">{{ darkMode.isDarkMode() ? '☀️' : '🌙' }}</span>
+        <span class="dark-mode-label" *ngIf="!isCollapsed">
+          {{ darkMode.isDarkMode() ? 'Light Mode' : 'Dark Mode' }}
+        </span>
+      </button>
+    </div>
+    
     <a routerLink="/help" class="help-link">Help desk</a>
 </nav>
