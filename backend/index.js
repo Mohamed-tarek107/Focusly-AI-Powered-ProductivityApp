@@ -6,6 +6,7 @@ const aiRoutes = require("./Ai/ai.routes");
 const AccountSettings = require("./accountsettings/account.routes")
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
+const helmet = require("helmet")
 
 const app = express();
 app.use(helmet());

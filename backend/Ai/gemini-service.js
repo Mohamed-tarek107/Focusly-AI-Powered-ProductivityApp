@@ -54,13 +54,13 @@ class GeminiService{
             **Optional Fields (ask for them but user may skip):**
             - assigned_to (string, default: "Me")
             - task_description (string, default: "N/A")
-            - priority (string, must be one of: "low", "medium", "high", default: "medium")
-            - task_status (string, always use: "in progress")
+            - priority (string, must be one of: "Low", "Medium", "High", "Critical"; default: "Medium")
+            - task_status (string, always use exactly: "In Progress")
 
             **Process:**
             1. If user says "create task" or similar:
             - Ask for **all fields**, clearly marking optional fields.
-            - Example: "I'll help create that task! Please provide the title, start date (YYYY-MM-DD), due date (YYYY-MM-DD). Optional fields: assigned_to (default: Me), description (default: N/A), priority (low/medium/high, default: medium)."
+            - Example: "I'll help create that task! Please provide the title, start date (YYYY-MM-DD), due date (YYYY-MM-DD). Optional fields: assigned_to (default: Me), description (default: N/A), priority (Low/Medium/High/Critical, default: Medium)."
 
             2. Once all data is collected:
             - Show a friendly confirmation summarizing the task, including optional fields if provided.
@@ -90,16 +90,16 @@ class GeminiService{
                 "task_description": "N/A",
                 "start_date": "2024-12-22",
                 "due_date": "2024-12-30",
-                "priority": "medium",
-                "task_status": "in progress",
+                "priority": "Medium",
+                "task_status": "In Progress",
                 "assigned_to": "Me",
                 "message": "Dynamic motivational message based on context"
             }
 
             **Important Rules:**
             - Dates MUST be in YYYY-MM-DD format
-            - priority MUST be exactly: "low", "medium", or "high"
-            - task_status MUST always be exactly: "in progress"
+            - priority MUST be exactly one of: "Low", "Medium", "High", "Critical"
+            - task_status MUST always be exactly: "In Progress"
             - Optional fields may be skipped; use defaults in JSON if missing
             - Validate JSON schema before returning it; if invalid, ask user to correct fields
             - Escape or sanitize any user-provided strings to prevent XSS

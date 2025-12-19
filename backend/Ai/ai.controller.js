@@ -31,11 +31,20 @@ class AiController {
             
 
             if (parsedReply.command === "CreateTask") {
-                const createdTask = await createTask(parsedReply, req.user.user_id );
-                return res.json({ 
-                    message: parsedReply.message,
-                    task: createdTask,
-                    newHistory: newHistory});
+                try {
+                    const createdTask = await createTask(parsedReply, req.user.user_id);
+                    return res.json({ 
+                        message: parsedReply.message,
+                        task: createdTask,
+                        newHistory: newHistory
+                    });
+                } catch (e) {
+                    return res.status(400).json({ 
+                        error: "Invalid task data",
+                        details: e.message,
+                        newHistory: newHistory
+                    });
+                }
             }
 
             return res.json({
