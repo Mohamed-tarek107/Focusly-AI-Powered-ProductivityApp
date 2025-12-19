@@ -38,7 +38,10 @@ export class Login {
   }
 
   onLogout() {
-    this.Auth.logout();
+    this.Auth.logout().subscribe({
+      next: () => this.router.navigate(['/Login']),
+      error: () => this.router.navigate(['/Login']) // navigate even on error
+    });
     this.message = 'Logged out';
   }
 }

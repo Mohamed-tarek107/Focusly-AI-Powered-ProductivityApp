@@ -85,8 +85,10 @@ handleLogout() {
   console.log('Logout clicked');
   try {
       this.isUserDropdownOpen = false;
-      this.auth.logout();
-      this.router.navigate(['/Login']);
+      this.auth.logout().subscribe({
+        next: () => this.router.navigate(['/Login']),
+        error: () => this.router.navigate(['/Login']) 
+    });
       this.cdr.detectChanges();
   } catch (error) {
     console.log("Error logging out", error)

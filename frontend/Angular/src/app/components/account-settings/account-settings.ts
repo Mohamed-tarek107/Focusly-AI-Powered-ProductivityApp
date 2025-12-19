@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
 import { Authservice } from '../../services/AuthService/auth';
 import { AccountSettingsService } from '../../services/AccountSettings/account-settings';
+import { Router } from '@angular/router';
 
 interface UserData {
   username: string;
@@ -32,7 +33,11 @@ interface Update {
 })
 export class AccountSettings implements OnInit {
 
-  constructor(private user: Authservice, private setting: AccountSettingsService, private cdr: ChangeDetectorRef) {}
+  constructor(
+     private auth: Authservice,
+     private setting: AccountSettingsService,
+     private cdr: ChangeDetectorRef,
+     private router: Router) {}
 
   userData: UserData = {
     username: '',
@@ -59,7 +64,7 @@ export class AccountSettings implements OnInit {
   errorMessage = '';
 
   ngOnInit() {
-    this.user.current<UserData>().subscribe({
+    this.auth.current<UserData>().subscribe({
       next: (data) => {
        console.log('User data received:', data); // Debug 
           this.userData = data;
@@ -194,7 +199,10 @@ deleteAccount() {
       next: () => {
         alert('Account deleted successfully');
         this.isLoading = false;
-        this.user.logout();
+        this.auth.logout().subscribe({
+          next: () => this.router.navigate(['/Login']),
+          error: () => this.router.navigate(['/Login']) // navigate even on error
+        });
         this.cdr.detectChanges();
       },
       error: (err) => {

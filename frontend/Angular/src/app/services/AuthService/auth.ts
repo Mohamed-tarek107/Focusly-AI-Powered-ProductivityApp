@@ -74,7 +74,8 @@ export class Authservice {
             token,
             NewPass: newPass,
             ConfirmPass: confirmPass
-          }
+          },
+          { withCredentials: true }
         );
       }
 
