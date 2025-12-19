@@ -7,7 +7,7 @@ const router = express.Router();
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 5,
+    max: 25,
     message: "Too many attempts, please try again after 5 minutes."
 });
 

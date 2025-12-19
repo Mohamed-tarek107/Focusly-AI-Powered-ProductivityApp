@@ -114,14 +114,14 @@ const errors = validationResult(req);
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true, //not accessible in js
-        secure: false,
+        secure: true,
         path: "/", // only send to this endpoint ( ALL endpoint)
         sameSite: "strict", // prevent CSRF
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ayam
     })
     res.cookie("accessToken", accessToken, {
         httpOnly: true, 
-        secure: false,
+        secure: true,
         path: "/",
         sameSite: "strict", 
         maxAge: 15 * 60 * 1000 
